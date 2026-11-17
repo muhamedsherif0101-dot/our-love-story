@@ -73,6 +73,27 @@
     }
     if (!photos.length) grid.innerHTML = '<p class="muted arabic" dir="rtl">الألبوم ده لسه مستني صوره ❤️</p>';
   }
+  const musicButton = $("musicPlayBtn");
+  const musicPlayer = $("musicPlayer");
+  let musicLoaded = false;
+  musicButton.addEventListener("click", () => {
+    if (!musicLoaded) {
+      const frame = document.createElement("iframe");
+      frame.src = "https://www.youtube-nocookie.com/embed/E61YGFkgqbg?autoplay=1&rel=0";
+      frame.title = "الحلم ده حلمنا - عمرو دياب";
+      frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+      frame.referrerPolicy = "strict-origin-when-cross-origin";
+      frame.allowFullscreen = true;
+      musicPlayer.appendChild(frame);
+      musicPlayer.classList.remove("hidden");
+      musicButton.textContent = "♪";
+      musicButton.setAttribute("aria-label", "Show or hide music player");
+      musicLoaded = true;
+    } else {
+      musicPlayer.classList.toggle("hidden");
+    }
+  });
+
   $("closeAlbum").addEventListener("click", () => $("albumModal").classList.remove("visible"));
   $("albumModal").addEventListener("click", e => { if (e.target === $("albumModal")) $("albumModal").classList.remove("visible"); });
   $("loginForm").addEventListener("submit", async e => {
