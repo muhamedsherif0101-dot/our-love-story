@@ -34,3 +34,12 @@ A LOVE THAT NEVER ENDS — دليل التشغيل
 
 ملاحظة:
 الموقع يستخدم مكتبة Supabase JavaScript من CDN وخطوط Google Fonts؛ يحتاج اتصال إنترنت.
+
+
+إضافة أغنية MP3 لكل ألبوم:
+1) افتح Supabase > SQL Editor والصق محتوى الملف SUPABASE_MUSIC_SETUP.sql ثم اضغط Run مرة واحدة.
+2) ارفع ملفات الموقع الجديدة إلى GitHub مع استبدال الملفات القديمة.
+3) افتح admin.html، عدّل الألبوم أو أنشئ ألبومًا، واختر ملف MP3 في خانة Album song.
+4) الأغنية تُرفع إلى نفس Storage bucket الخاص (memory-photos)، وتظهر داخل الألبوم بمشغل صوت.
+5) تقدر تستبدل الأغنية باختيار ملف MP3 جديد، أو تشيلها بتفعيل Remove the current song.
+ملاحظة: استخدم MP3 فقط، وحافظ على bucket Private وسياسات Storage الحالية.

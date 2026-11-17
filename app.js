@@ -29,9 +29,14 @@
     $("minutes").textContent = String(Math.floor(total % 3600 / 60)).padStart(2, "0");
     $("seconds").textContent = String(total % 60).padStart(2, "0");
   }
+  async function signedMedia(path) {
+    const { data, error } = await db.storage.from(BUCKET).createSignedUrl(path, 3600);
+    if (error) throw error;
+    return data.signedUrl;
+  }
   async function loadAlbums() {
     const holder = $("albums");
-    const { data, error } = await db.from("albums").select("id,title,event_date,story,cover_path,album_photos(id,storage_path,caption,sort_order)").order("event_date", { ascending:false, nullsFirst:false });
+    const { data, error } = await db.from("albums").select("id,title,event_date,story,cover_path,album_photos(id,storage_path,caption,sort_order),album_music(id,storage_path,title)").order("event_date", { ascending:false, nullsFirst:false });
     if (error) { holder.innerHTML = '<p class="error">Could not load albums. Please refresh and try again.</p>'; console.error(error); return; }
     if (!data?.length) { holder.innerHTML = '<div class="empty-state"><span>♡</span><h3>Our story starts here</h3><p class="arabic" dir="rtl">لسه هنملى المكان ده بذكرياتنا الحلوة.</p></div>'; return; }
     holder.innerHTML = "";
@@ -50,17 +55,28 @@
       const title = document.createElement("h3"); title.textContent = album.title;
       const count = document.createElement("p"); count.textContent = `${photos.length} ${photos.length === 1 ? "photo" : "photos"}`;
       body.append(date,title,count); card.append(img,body);
-      card.addEventListener("click", () => openAlbum(album, photos));
+      card.addEventListener("click", () => openAlbum(album, photos, album.album_music || []));
       holder.appendChild(card);
     }
   }
-  async function openAlbum(album, photos) {
+  async function openAlbum(album, photos, songs=[]) {
     $("albumTitle").textContent = album.title;
     $("albumDate").textContent = formatDate(album.event_date);
     $("albumStory").textContent = album.story || "";
     $("albumPhotos").innerHTML = '<div class="loading">Opening memory…</div>';
     $("albumModal").classList.add("visible");
     const grid = $("albumPhotos"); grid.innerHTML = "";
+    const oldMusic=$("albumMusic"); if(oldMusic) oldMusic.remove();
+    if(songs.length) {
+      try {
+        const audioUrl=await signedMedia(songs[0].storage_path);
+        const musicBox=document.createElement("section"); musicBox.id="albumMusic"; musicBox.className="album-music";
+        const heading=document.createElement("h3"); heading.textContent="♪ A song for this memory";
+        const name=document.createElement("p"); name.textContent=songs[0].title||"Our album song";
+        const player=document.createElement("audio"); player.controls=true; player.preload="none"; player.src=audioUrl;
+        musicBox.append(heading,name,player); $("albumStory").after(musicBox);
+      } catch(e) { console.error(e); }
+    }
     for (const photo of photos) {
       try {
         const url = await signedPhoto(photo.storage_path);
@@ -73,27 +89,6 @@
     }
     if (!photos.length) grid.innerHTML = '<p class="muted arabic" dir="rtl">الألبوم ده لسه مستني صوره ❤️</p>';
   }
-  const musicButton = $("musicPlayBtn");
-  const musicPlayer = $("musicPlayer");
-  let musicLoaded = false;
-  musicButton.addEventListener("click", () => {
-    if (!musicLoaded) {
-      const frame = document.createElement("iframe");
-      frame.src = "https://www.youtube-nocookie.com/embed/E61YGFkgqbg?autoplay=1&rel=0";
-      frame.title = "الحلم ده حلمنا - عمرو دياب";
-      frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
-      frame.referrerPolicy = "strict-origin-when-cross-origin";
-      frame.allowFullscreen = true;
-      musicPlayer.appendChild(frame);
-      musicPlayer.classList.remove("hidden");
-      musicButton.textContent = "♪";
-      musicButton.setAttribute("aria-label", "Show or hide music player");
-      musicLoaded = true;
-    } else {
-      musicPlayer.classList.toggle("hidden");
-    }
-  });
-
   $("closeAlbum").addEventListener("click", () => $("albumModal").classList.remove("visible"));
   $("albumModal").addEventListener("click", e => { if (e.target === $("albumModal")) $("albumModal").classList.remove("visible"); });
   $("loginForm").addEventListener("submit", async e => {

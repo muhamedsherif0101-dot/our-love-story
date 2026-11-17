@@ -23,6 +23,9 @@
         <label>Story / message <span class="arabic hint" dir="rtl">اكتب حكاية اليوم أو رسالة للولو</span><textarea id="story" dir="rtl" rows="5" placeholder="احكي تفاصيل اليوم اللي مش عايزنا ننساه..."></textarea></label>
         <label>Photos <span class="hint">Choose 5–6 photos, or more. When editing, new photos are added to the album.</span><input id="photos" type="file" accept="image/*" multiple></label>
         <div id="selectedFiles" class="hint"></div>
+        <label>Album song (MP3) <span class="hint">اختار أغنية خاصة بالذكرى — MP3 فقط</span><input id="albumSong" type="file" accept="audio/mpeg,.mp3"></label>
+        <div id="selectedSong" class="hint"></div>
+        <label id="removeSongWrap" class="song-remove hidden"><input id="removeSong" type="checkbox"> Remove the current song from this album</label>
         <div class="button-row"><button class="primary-btn" type="submit" id="saveBtn">Save album</button><button class="secondary-btn hidden" type="button" id="cancelEdit">Cancel edit</button></div>
         <p id="formMessage" class="message" role="status"></p>
       </form>
