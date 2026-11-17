@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Studio | A Love That Never Ends</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script defer src="admin.js"></script>
+</head>
+<body class="admin-body">
+  <header class="topbar"><a class="brand" href="index.html">A Love That Never Ends <span>♡</span></a><nav><a href="index.html">View website</a><button id="logoutBtn" class="text-button">Log out</button></nav></header>
+  <main class="admin-main">
+    <div class="admin-heading"><div><div class="section-kicker">YOUR PRIVATE CONTROL ROOM</div><h1>Memory Studio</h1><p class="arabic muted" dir="rtl">ضيف ذكرى جديدة وخلي كل لحظة في مكانها.</p></div></div>
+    <section class="admin-panel">
+      <h2 id="formHeading">Create a memory album</h2>
+      <form id="albumForm" class="stack">
+        <input id="albumId" type="hidden">
+        <label>Album title<input id="title" required maxlength="100" placeholder="e.g. Our first trip"></label>
+        <label>Memory date<input id="eventDate" type="date"></label>
+        <label>Story / message <span class="arabic hint" dir="rtl">اكتب حكاية اليوم أو رسالة للولو</span><textarea id="story" dir="rtl" rows="5" placeholder="احكي تفاصيل اليوم اللي مش عايزنا ننساه..."></textarea></label>
+        <label>Photos <span class="hint">Choose 5–6 photos, or more. When editing, new photos are added to the album.</span><input id="photos" type="file" accept="image/*" multiple></label>
+        <div id="selectedFiles" class="hint"></div>
+        <div class="button-row"><button class="primary-btn" type="submit" id="saveBtn">Save album</button><button class="secondary-btn hidden" type="button" id="cancelEdit">Cancel edit</button></div>
+        <p id="formMessage" class="message" role="status"></p>
+      </form>
+    </section>
+    <section class="admin-panel">
+      <div class="panel-heading"><h2>All memory albums</h2><span id="albumCount" class="pill">0 albums</span></div>
+      <div id="adminAlbums" class="admin-list"><div class="loading">Loading albums…</div></div>
+    </section>
+  </main>
+</body>
+</html>
