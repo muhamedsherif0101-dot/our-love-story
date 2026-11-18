@@ -62,7 +62,12 @@
       const date = document.createElement("span"); date.className = "album-date"; date.textContent = formatDate(album.event_date);
       const title = document.createElement("h3"); title.textContent = album.title;
       const count = document.createElement("p"); count.textContent = `${photos.length} ${photos.length === 1 ? "photo" : "photos"}`;
-      body.append(date,title,count); card.append(img,body);
+      const story = document.createElement("p");
+story.className = "album-story-preview";
+story.textContent = album.story || "";
+
+body.append(date, title, story, count);
+card.append(img, body);
       card.addEventListener("click", () => openAlbum(album, photos, album.album_music || []));
       holder.appendChild(card);
     }
@@ -74,7 +79,7 @@ async function openAlbum(album, photos, songs = []) {
   $("albumStory").textContent = album.story || "";
   $("albumPhotos").innerHTML = '<div class="loading">Opening memory…</div>';
   $("albumModal").classList.add("visible");
-
+$("albumModal").classList.add("photo-view-mode");
   const grid = $("albumPhotos");
   const oldMusic = $("albumMusic");
   if (oldMusic) oldMusic.remove();
@@ -211,8 +216,14 @@ async function openAlbum(album, photos, songs = []) {
   rHTMshowPhoto(0);
 }
   
-  $("closeAlbum").addEventListener("click", () => $("albumModal").classList.remove("visible"));
-  $("albumModal").addEventListener("click", e => { if (e.target === $("albumModal")) $("albumModal").classList.remove("visible"); });
+  $("closeAlbum").addEventListener("click", () => {
+  $("albumModal").classList.remove("visible", "photo-view-mode");
+});
+ $("albumModal").addEventListener("click", e => {
+  if (e.target === $("albumModal")) {
+    $("albumModal").classList.remove("visible", "photo-view-mode");
+  }
+});
   $("loginForm").addEventListener("submit", async e => {
     e.preventDefault(); showError("");
     const { data, error } = await db.auth.signInWithPassword({ email:$("email").value.trim(), password:$("password").value });
