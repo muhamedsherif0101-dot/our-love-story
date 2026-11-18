@@ -34,6 +34,105 @@
     if (error) throw error;
     return data.signedUrl;
   }
+  
+let globalPlaylist = [];
+let currentTrackIndex = 0;
+
+async function setupGlobalPlaylist(albums) {
+  const audio = $("globalAudio");
+  const playBtn = $("globalPlayBtn");
+  const nextBtn = $("globalNextBtn");
+  const songTitle = $("globalSongTitle");
+  const songStatus = $("globalSongStatus");
+
+  globalPlaylist = [];
+
+  for (const album of albums || []) {
+    for (const song of album.album_music || []) {
+      try {
+        const url = await signedMedia(song.storage_path);
+        globalPlaylist.push({
+          url,
+          title: song.title || album.title || "Our Song"
+        });
+      } catch (error) {
+        console.error("Could not load song:", error);
+      }
+    }
+  }
+
+  currentTrackIndex = 0;
+  audio.pause();
+  audio.removeAttribute("src");
+  audio.load();
+
+  if (!globalPlaylist.length) {
+    songTitle.textContent = "Our Songs";
+    songStatus.textContent = "No songs added yet...";
+    playBtn.disabled = true;
+    nextBtn.disabled = true;
+    return;
+  }
+
+  songTitle.textContent = globalPlaylist[0].title;
+  songStatus.textContent = "Ready when you are...";
+  playBtn.disabled = false;
+  nextBtn.disabled = globalPlaylist.length < 2;
+
+  async function playTrack(index) {
+    if (!globalPlaylist.length) return;
+
+    currentTrackIndex = (index + globalPlaylist.length) % globalPlaylist.length;
+    const track = globalPlaylist[currentTrackIndex];
+
+    audio.src = track.url;
+    songTitle.textContent = track.title;
+    songStatus.textContent = "Now playing ♡";
+    playBtn.textContent = "Pause";
+    nextBtn.disabled = globalPlaylist.length < 2;
+
+    try {
+      await audio.play();
+    } catch (error) {
+      songStatus.textContent = "Tap Play to start the music";
+      playBtn.textContent = "Play ♡";
+      console.warn("Playback error:", error);
+    }
+  }
+
+  playBtn.onclick = async () => {
+    if (!globalPlaylist.length) return;
+
+    if (!audio.paused) {
+      audio.pause();
+      playBtn.textContent = "Play ♡";
+      songStatus.textContent = "Paused";
+      return;
+    }
+
+    if (audio.getAttribute("src")) {
+      try {
+        await audio.play();
+        playBtn.textContent = "Pause";
+        songStatus.textContent = "Now playing ♡";
+      } catch (error) {
+        songStatus.textContent = "Could not play this song";
+      }
+    } else {
+      await playTrack(currentTrackIndex);
+    }
+  };
+
+  nextBtn.onclick = () => playTrack(currentTrackIndex + 1);
+
+  audio.onended = () => playTrack(currentTrackIndex + 1);
+
+  audio.onerror = () => {
+    songStatus.textContent = "Could not load this song";
+    playBtn.textContent = "Play ♡";
+  };
+}
+
   async function loadSiteContent() {
     const { data, error } = await db.from("site_content").select("content_key,content_value");
     if (error) { console.warn("Site text is using its default copy.", error); return; }
@@ -71,6 +170,7 @@ card.append(img, body);
       card.addEventListener("click", () => openAlbum(album, photos, album.album_music || []));
       holder.appendChild(card);
     }
+await setupGlobalPlaylist(data);
   }
 
 async function openAlbum(album, photos, songs = []) {
@@ -84,31 +184,6 @@ $("albumModal").classList.add("photo-view-mode");
   const oldMusic = $("albumMusic");
   if (oldMusic) oldMusic.remove();
 
-  // Album music
-  if (songs.length) {
-    try {
-      const audioUrl = await signedMedia(songs[0].storage_path);
-      const musicBox = document.createElement("section");
-      musicBox.id = "albumMusic";
-      musicBox.className = "album-music";
-
-      const heading = document.createElement("h3");
-      heading.textContent = "♪ A song for this memory";
-
-      const name = document.createElement("p");
-      name.textContent = songs[0].title || "Our album song";
-
-      const player = document.createElement("audio");
-      player.controls = true;
-      player.preload = "none";
-      player.src = audioUrl;
-
-      musicBox.append(heading, name, player);
-      $("albumStory").after(musicBox);
-    } catch (e) {
-      console.error("Music error:", e);
-    }
-  }
 
   grid.innerHTML = "";
 
