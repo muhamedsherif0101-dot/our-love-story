@@ -48,7 +48,13 @@ async function setupGlobalPlaylist(albums) {
   globalPlaylist = [];
 
   for (const album of albums || []) {
-    for (const song of album.album_music || []) {
+    const songs = Array.isArray(album.album_music)
+  ? album.album_music
+  : album.album_music
+    ? [album.album_music]
+    : [];
+
+for (const song of songs) {
       try {
         const url = await signedMedia(song.storage_path);
         globalPlaylist.push({
