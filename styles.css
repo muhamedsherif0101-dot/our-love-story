@@ -109,3 +109,47 @@ html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);
   font-size: 14px;
   direction: rtl;
 }
+
+/* FINAL GALLERY SIZE FIX */
+#albumPhotos {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  height: auto !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+}
+
+#albumPhotos .mobile-gallery {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+}
+
+#albumPhotos .gallery-stage {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
+#albumPhotos .gallery-image {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  flex: 0 1 auto !important;
+}
