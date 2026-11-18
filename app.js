@@ -3,6 +3,7 @@
   const db = createClient(window.SUPABASE_URL, window.SUPABASE_PUBLISHABLE_KEY);
   const $ = (id) => document.getElementById(id);
   const BUCKET = "memory-photos";
+  const VIDEO_BUCKET = "memory-videos";
   let currentUser = null;
 
   function showError(message) { $("loginError").textContent = message; }
@@ -35,6 +36,62 @@
     return data.signedUrl;
   }
   
+async function signedVideo(path) {
+  const { data, error } = await db.storage
+    .from(VIDEO_BUCKET)
+    .createSignedUrl(path, 3600);
+
+  if (error) throw error;
+  return data.signedUrl;
+}
+
+function createVideoCard(video) {
+  const card = document.createElement("article");
+  card.className = "video-card";
+
+  const title = document.createElement("h3");
+  title.textContent = video.title || "A Special Moment";
+
+  const description = document.createElement("p");
+  description.className = "video-description";
+  description.textContent = video.description || "";
+
+  const player = document.createElement("video");
+  player.className = "memory-video";
+  player.controls = true;
+  player.preload = "none";
+  player.playsInline = true;
+  player.hidden = true;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "video-load-btn";
+  button.textContent = "Load Video ♡";
+
+  const message = document.createElement("p");
+  message.className = "video-message";
+
+  button.addEventListener("click", async () => {
+    button.disabled = true;
+    button.textContent = "Loading...";
+
+    try {
+      const url = await signedVideo(video.storage_path);
+      player.src = url;
+      player.hidden = false;
+      player.load();
+      button.hidden = true;
+    } catch (error) {
+      console.error("Video loading error:", error);
+      button.disabled = false;
+      button.textContent = "Try Again";
+      message.textContent = "Could not load this video. Please try again.";
+    }
+  });
+
+  card.append(title, description, button, message, player);
+  return card;
+}
 let globalPlaylist = [];
 let currentTrackIndex = 0;
 
@@ -149,6 +206,7 @@ for (const song of songs) {
   }
   async function loadAlbums() {
     const holder = $("albums");
+    await loadVideos();
     const { data, error } = await db.from("albums").select("id,title,event_date,story,cover_path,album_photos(id,storage_path,caption,sort_order),album_music(id,storage_path,title)").order("event_date", { ascending:false, nullsFirst:false });
     if (error) { holder.innerHTML = '<p class="error">Could not load albums. Please refresh and try again.</p>'; console.error(error); return; }
     if (!data?.length) { holder.innerHTML = '<div class="empty-state"><span>♡</span><h3>Our story starts here</h3><p class="arabic" dir="rtl">لسه هنملى المكان ده بذكرياتنا الحلوة.</p></div>'; return; }
@@ -177,6 +235,41 @@ card.append(img, body);
       holder.appendChild(card);
     }
 await setupGlobalPlaylist(data);
+ async function loadVideos() {
+  const holder = $("videosGrid");
+  if (!holder) return;
+
+  holder.innerHTML = '<div class="loading">Loading our videos…</div>';
+
+  const { data, error } = await db
+    .from("album_videos")
+    .select("id,album_id,storage_path,title,description,show_in_section,created_at")
+    .eq("show_in_section", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Videos loading error:", error);
+    holder.innerHTML = '<p class="error">Could not load our videos.</p>';
+    return;
+  }
+
+  holder.innerHTML = "";
+
+  if (!data || !data.length) {
+    holder.innerHTML = `
+      <div class="empty-state">
+        <span>♡</span>
+        <h3>Our little movie collection</h3>
+        <p class="arabic" dir="rtl">لسه هنضيف فيديوهاتنا الحلوة هنا ❤️</p>
+      </div>`;
+    return;
+  }
+
+  data.forEach(video => {
+    holder.appendChild(createVideoCard(video));
+  });
+}
+
   }
 
 async function openAlbum(album, photos, songs = []) {
