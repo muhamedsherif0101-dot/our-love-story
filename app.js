@@ -208,38 +208,9 @@ async function openAlbum(album, photos, songs = []) {
   viewer.append(stage, counter, caption);
   grid.appendChild(viewer);
 
-  showPhoto(0);
+  rHTMshowPhoto(0);
 }
-
-    $("albumTitle").textContent = album.title;
-    $("albumDate").textContent = formatDate(album.event_date);
-    $("albumStory").textContent = album.story || "";
-    $("albumPhotos").innerHTML = '<div class="loading">Opening memory…</div>';
-    $("albumModal").classList.add("visible");
-    const grid = $("albumPhotos"); grid.innerHTML = "";
-    const oldMusic=$("albumMusic"); if(oldMusic) oldMusic.remove();
-    if(songs.length) {
-      try {
-        const audioUrl=await signedMedia(songs[0].storage_path);
-        const musicBox=document.createElement("section"); musicBox.id="albumMusic"; musicBox.className="album-music";
-        const heading=document.createElement("h3"); heading.textContent="♪ A song for this memory";
-        const name=document.createElement("p"); name.textContent=songs[0].title||"Our album song";
-        const player=document.createElement("audio"); player.controls=true; player.preload="none"; player.src=audioUrl;
-        musicBox.append(heading,name,player); $("albumStory").after(musicBox);
-      } catch(e) { console.error(e); }
-    }
-    for (const photo of photos) {
-      try {
-        const url = await signedPhoto(photo.storage_path);
-        const wrap = document.createElement("figure");
-        const img = document.createElement("img"); img.src = url; img.alt = photo.caption || album.title;
-        wrap.appendChild(img);
-        if (photo.caption) { const cap = document.createElement("figcaption"); cap.textContent = photo.caption; wrap.appendChild(cap); }
-        grid.appendChild(wrap);
-      } catch(e) { console.error(e); }
-    }
-    if (!photos.length) grid.innerHTML = '<p class="muted arabic" dir="rtl">الألبوم ده لسه مستني صوره ❤️</p>';
-  }
+  
   $("closeAlbum").addEventListener("click", () => $("albumModal").classList.remove("visible"));
   $("albumModal").addEventListener("click", e => { if (e.target === $("albumModal")) $("albumModal").classList.remove("visible"); });
   $("loginForm").addEventListener("submit", async e => {
