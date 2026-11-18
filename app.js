@@ -288,7 +288,7 @@ $("albumModal").classList.add("photo-view-mode");
   viewer.append(stage, counter, caption);
   grid.appendChild(viewer);
 
-  rHTMshowPhoto(0);
+  showPhoto(0);
 }
   
   $("closeAlbum").addEventListener("click", () => {
