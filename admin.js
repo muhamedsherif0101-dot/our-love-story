@@ -25,7 +25,11 @@
   ];
   function contentStatus(text,bad=false){ $("contentMessage").textContent=text; $("contentMessage").className=bad?"message error":"message success"; }
   async function loadEditableContent(){
+    const holder=$("contentFields");
+    holder.innerHTML='<div class="loading">Loading editable messages…</div>';
+    const timeout=setTimeout(()=>{ if(holder.querySelector(".loading")) holder.innerHTML='<p class="error">Loading timed out. Check your connection and Supabase settings, then refresh.</p>'; },12000);
     const {data,error}=await db.from("site_content").select("content_key,content_value");
+    clearTimeout(timeout);
     if(error){ $("contentFields").innerHTML='<p class="error">Could not load messages. Run the site-content SQL setup first.</p>'; console.error(error); return; }
     const values=Object.fromEntries((data||[]).map(x=>[x.content_key,x.content_value]));
     const holder=$("contentFields"); holder.innerHTML="";
@@ -141,7 +145,6 @@
       const paths=[...(a.album_photos||[]).map(p=>p.storage_path),...(a.album_music||[]).map(m=>m.storage_path)];
       if(paths.length) { const {error}=await db.storage.from(BUCKET).remove(paths); if(error) throw error; }
       const {error}=await db.from("albums").delete().eq("id",a.id); if(error) throw error;
-      await loadEditableContent();
       await refresh(); message("Album deleted.");
     } catch(err) { console.error(err); message(err.message||"Could not delete album.",true); }
   }
@@ -152,6 +155,7 @@
     try {
       const role=await roleFor(data.session.user.id);
       if(role!=="admin"){alert("Admin access only.");location.href="index.html";return;}
+      await loadEditableContent();
       await refresh();
     } catch(e){console.error(e);alert("Could not verify admin access.");location.href="index.html";}
   })();
