@@ -32,7 +32,7 @@
     clearTimeout(timeout);
     if(error){ $("contentFields").innerHTML='<p class="error">Could not load messages. Run the site-content SQL setup first.</p>'; console.error(error); return; }
     const values=Object.fromEntries((data||[]).map(x=>[x.content_key,x.content_value]));
-    const holder=$("contentFields"); holder.innerHTML="";
+    holder.innerHTML="";
     for(const [key,label,placeholder,arabic] of editableContent){
       const wrap=document.createElement("label"); wrap.textContent=label;
       const input=document.createElement(arabic?"textarea":"input");
