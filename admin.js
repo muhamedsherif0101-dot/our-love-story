@@ -3,6 +3,50 @@
   const $ = id => document.getElementById(id);
   const BUCKET = "memory-photos";
   let albumsCache = [];
+  const editableContent = [
+    ["hero_eyebrow","Hero — small heading","A LITTLE PLACE FOR OUR FOREVER",false],
+    ["hero_title","Hero — main heading","Every moment with you",false],
+    ["hero_title_em","Hero — highlighted heading","is my favorite.",false],
+    ["hero_message","Hero — Arabic message","كل ذكرى معاكي ليها مكان خاص في قلبي، ولسه أجمل الحكايات جاية.",true],
+    ["hero_button","Hero — button","Explore our memories",false],
+    ["counter_kicker","Counter — small heading","AND THE COUNTING NEVER STOPS",false],
+    ["counter_title","Counter — title","Our Time Together",false],
+    ["counter_message","Counter — Arabic message","من يوم ما بدأت حكايتنا، وكل ثانية بتعدّي بتخليني أحبك أكتر.",true],
+    ["counter_since","Counter — date caption","Since November 19, 2025",false],
+    ["memories_kicker","Memories — small heading","OUR LITTLE TIME CAPSULE",false],
+    ["memories_title","Memories — title","Our Memories",false],
+    ["memories_message","Memories — Arabic message","كل ألبوم حكاية، وكل صورة فيها جزء من عمرنا سوا.",true],
+    ["footer_text","Footer — main text","Made with love, for Lola",false],
+    ["footer_subtitle","Footer — subtitle","Our story, one memory at a time.",false],
+    ["login_kicker","Login — small heading","A PRIVATE LITTLE WORLD",false],
+    ["login_title","Login — title","Welcome back",false],
+    ["login_message","Login — Arabic message","ادخلي عشان تشوفي ذكرياتنا الجميلة ❤️",true],
+    ["login_button","Login — button","Enter our world",false]
+  ];
+  function contentStatus(text,bad=false){ $("contentMessage").textContent=text; $("contentMessage").className=bad?"message error":"message success"; }
+  async function loadEditableContent(){
+    const {data,error}=await db.from("site_content").select("content_key,content_value");
+    if(error){ $("contentFields").innerHTML='<p class="error">Could not load messages. Run the site-content SQL setup first.</p>'; console.error(error); return; }
+    const values=Object.fromEntries((data||[]).map(x=>[x.content_key,x.content_value]));
+    const holder=$("contentFields"); holder.innerHTML="";
+    for(const [key,label,placeholder,arabic] of editableContent){
+      const wrap=document.createElement("label"); wrap.textContent=label;
+      const input=document.createElement(arabic?"textarea":"input");
+      input.dataset.contentKey=key; input.value=values[key] ?? placeholder; input.placeholder=placeholder;
+      if(arabic){input.dir="rtl";input.rows=3;} else input.maxLength=300;
+      wrap.appendChild(input); holder.appendChild(wrap);
+    }
+  }
+  async function saveEditableContent(e){
+    e.preventDefault(); const btn=$("saveContentBtn"); btn.disabled=true; contentStatus("Saving messages…");
+    try{
+      const rows=Array.from(document.querySelectorAll("[data-content-key]")).map(el=>({content_key:el.dataset.contentKey,content_value:el.value.trim()}));
+      const {error}=await db.from("site_content").upsert(rows,{onConflict:"content_key"}); if(error) throw error;
+      contentStatus("Saved! The website messages have been updated.");
+    }catch(err){console.error(err);contentStatus(err.message||"Could not save messages. Check the SQL setup and admin policy.",true);}
+    finally{btn.disabled=false;}
+  }
+  $("contentForm").addEventListener("submit",saveEditableContent);
 
   async function roleFor(userId) {
     const { data, error } = await db.from("user_roles").select("role").eq("user_id",userId).maybeSingle();
@@ -97,6 +141,7 @@
       const paths=[...(a.album_photos||[]).map(p=>p.storage_path),...(a.album_music||[]).map(m=>m.storage_path)];
       if(paths.length) { const {error}=await db.storage.from(BUCKET).remove(paths); if(error) throw error; }
       const {error}=await db.from("albums").delete().eq("id",a.id); if(error) throw error;
+      await loadEditableContent();
       await refresh(); message("Album deleted.");
     } catch(err) { console.error(err); message(err.message||"Could not delete album.",true); }
   }

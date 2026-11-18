@@ -34,6 +34,14 @@
     if (error) throw error;
     return data.signedUrl;
   }
+  async function loadSiteContent() {
+    const { data, error } = await db.from("site_content").select("content_key,content_value");
+    if (error) { console.warn("Site text is using its default copy.", error); return; }
+    for (const item of (data || [])) {
+      const el = document.querySelector(`[data-content="${CSS.escape(item.content_key)}"]`);
+      if (el) el.textContent = item.content_value ?? "";
+    }
+  }
   async function loadAlbums() {
     const holder = $("albums");
     const { data, error } = await db.from("albums").select("id,title,event_date,story,cover_path,album_photos(id,storage_path,caption,sort_order),album_music(id,storage_path,title)").order("event_date", { ascending:false, nullsFirst:false });
@@ -104,6 +112,7 @@
       if (role === "admin") {
         const link = document.createElement("a"); link.href = "admin.html"; link.textContent = "Admin Studio"; document.querySelector("nav").prepend(link);
       }
+      await loadSiteContent();
       await loadAlbums();
     } catch(err) { console.error(err); showError("Could not verify account permissions. Please try again."); }
   });
@@ -118,6 +127,7 @@
         if (["admin","viewer"].includes(role)) {
           $("loginModal").classList.remove("visible"); $("logoutBtn").classList.remove("hidden");
           if (role === "admin") { const link=document.createElement("a"); link.href="admin.html"; link.textContent="Admin Studio"; document.querySelector("nav").prepend(link); }
+          await loadSiteContent();
           await loadAlbums(); return;
         }
       } catch(e) { console.error(e); }

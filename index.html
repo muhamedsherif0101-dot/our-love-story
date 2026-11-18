@@ -14,42 +14,42 @@
   <header class="topbar"><a class="brand" href="#">A Love That Never Ends <span>♡</span></a><nav><a href="#counter">Our Time</a><a href="#memories">Our Memories</a><button id="logoutBtn" class="text-button hidden">Log out</button></nav></header>
   <main>
     <section class="hero">
-      <div class="eyebrow">A LITTLE PLACE FOR OUR FOREVER</div>
-      <h1>Every moment with you<br><em>is my favorite.</em></h1>
-      <p class="arabic hero-copy" dir="rtl">كل ذكرى معاكي ليها مكان خاص في قلبي، ولسه أجمل الحكايات جاية.</p>
-      <a class="primary-btn" href="#memories">Explore our memories <span>→</span></a>
+      <div class="eyebrow" data-content="hero_eyebrow">A LITTLE PLACE FOR OUR FOREVER</div>
+      <h1><span data-content="hero_title">Every moment with you</span><br><em data-content="hero_title_em">is my favorite.</em></h1>
+      <p class="arabic hero-copy" dir="rtl" data-content="hero_message">كل ذكرى معاكي ليها مكان خاص في قلبي، ولسه أجمل الحكايات جاية.</p>
+      <a class="primary-btn" href="#memories"><span data-content="hero_button">Explore our memories</span> <span>→</span></a>
     </section>
 
     <section id="counter" class="section counter-section">
-      <div class="section-kicker">AND THE COUNTING NEVER STOPS</div>
-      <h2>Our Time Together</h2>
-      <p class="arabic muted" dir="rtl">من يوم ما بدأت حكايتنا، وكل ثانية بتعدّي بتخليني أحبك أكتر.</p>
+      <div class="section-kicker" data-content="counter_kicker">AND THE COUNTING NEVER STOPS</div>
+      <h2 data-content="counter_title">Our Time Together</h2>
+      <p class="arabic muted" dir="rtl" data-content="counter_message">من يوم ما بدأت حكايتنا، وكل ثانية بتعدّي بتخليني أحبك أكتر.</p>
       <div class="counter-grid">
         <div class="counter-card"><strong id="days">0</strong><span>Days</span></div>
         <div class="counter-card"><strong id="hours">00</strong><span>Hours</span></div>
         <div class="counter-card"><strong id="minutes">00</strong><span>Minutes</span></div>
         <div class="counter-card"><strong id="seconds">00</strong><span>Seconds</span></div>
       </div>
-      <p class="small-note">Since November 19, 2025</p>
+      <p class="small-note" data-content="counter_since">Since November 19, 2025</p>
     </section>
 
     <section id="memories" class="section memories-section">
-      <div class="section-kicker">OUR LITTLE TIME CAPSULE</div>
-      <h2>Our Memories</h2>
-      <p class="arabic muted" dir="rtl">كل ألبوم حكاية، وكل صورة فيها جزء من عمرنا سوا.</p>
+      <div class="section-kicker" data-content="memories_kicker">OUR LITTLE TIME CAPSULE</div>
+      <h2 data-content="memories_title">Our Memories</h2>
+      <p class="arabic muted" dir="rtl" data-content="memories_message">كل ألبوم حكاية، وكل صورة فيها جزء من عمرنا سوا.</p>
       <div id="albums" class="album-grid"><div class="loading">Loading our memories…</div></div>
     </section>
-    <footer><div>Made with love, for Lola <span>♡</span></div><small>Our story, one memory at a time.</small></footer>
+    <footer><div><span data-content="footer_text">Made with love, for Lola</span> <span>♡</span></div><small data-content="footer_subtitle">Our story, one memory at a time.</small></footer>
   </main>
 
   <div id="loginModal" class="modal visible">
     <div class="modal-card login-card">
-      <div class="section-kicker">A PRIVATE LITTLE WORLD</div><h2>Welcome back</h2>
-      <p class="arabic muted" dir="rtl">ادخلي عشان تشوفي ذكرياتنا الجميلة ❤️</p>
+      <div class="section-kicker" data-content="login_kicker">A PRIVATE LITTLE WORLD</div><h2 data-content="login_title">Welcome back</h2>
+      <p class="arabic muted" dir="rtl" data-content="login_message">ادخلي عشان تشوفي ذكرياتنا الجميلة ❤️</p>
       <form id="loginForm" class="stack">
         <label>Email<input id="email" type="email" autocomplete="username" required placeholder="Your email"></label>
         <label>Password<input id="password" type="password" autocomplete="current-password" required placeholder="Your password"></label>
-        <button class="primary-btn full" type="submit">Enter our world</button>
+        <button class="primary-btn full" type="submit" data-content="login_button">Enter our world</button>
         <p id="loginError" class="error" role="alert"></p>
       </form>
     </div>

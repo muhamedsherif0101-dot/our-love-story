@@ -14,6 +14,16 @@
   <header class="topbar"><a class="brand" href="index.html">A Love That Never Ends <span>♡</span></a><nav><a href="index.html">View website</a><button id="logoutBtn" class="text-button">Log out</button></nav></header>
   <main class="admin-main">
     <div class="admin-heading"><div><div class="section-kicker">YOUR PRIVATE CONTROL ROOM</div><h1>Memory Studio</h1><p class="arabic muted" dir="rtl">ضيف ذكرى جديدة وخلي كل لحظة في مكانها.</p></div></div>
+
+    <section class="admin-panel">
+      <div class="panel-heading"><h2>Website messages</h2><span class="pill">Editable content</span></div>
+      <p class="arabic muted" dir="rtl">عدّل أي رسالة من رسائل الموقع واحفظها. التغيير هيظهر للولو في الصفحة الرئيسية.</p>
+      <form id="contentForm" class="stack">
+        <div id="contentFields" class="content-fields"><div class="loading">Loading editable messages…</div></div>
+        <button class="primary-btn" id="saveContentBtn" type="submit">Save website messages</button>
+        <p id="contentMessage" class="message" role="status"></p>
+      </form>
+    </section>
     <section class="admin-panel">
       <h2 id="formHeading">Create a memory album</h2>
       <form id="albumForm" class="stack">
