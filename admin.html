@@ -41,9 +41,49 @@
       </form>
     </section>
     <section class="admin-panel">
-      <div class="panel-heading"><h2>All memory albums</h2><span id="albumCount" class="pill">0 albums</span></div>
+  <div class="panel-heading">
+    <h2>Our Videos</h2>
+    <span class="pill">Video Studio</span>
+  </div>
+
+  <p dir="rtl">ارفع فيديوهات ذكرياتنا واختار تظهر فين ❤️</p>
+
+  <form id="videoForm">
+    <label>Video title
+      <input id="videoTitle" type="text" required placeholder="Our beautiful moment">
+    </label>
+
+    <label>Description
+      <textarea id="videoDescription" rows="3" dir="rtl" placeholder="اكتب ذكرى الفيديو..."></textarea>
+    </label>
+
+    <label>Choose video (MP4)
+      <input id="videoFile" type="file" accept="video/mp4,.mp4" required>
+    </label>
+
+    <label>Show inside album (optional)
+      <select id="videoAlbum">
+        <option value="">No album</option>
+      </select>
+    </label>
+
+    <label>
+      <input id="showVideoInSection" type="checkbox" checked>
+      Also show in Our Videos section
+    </label>
+
+    <button type="submit" id="saveVideoBtn">Upload video</button>
+    <p id="videoMessage"></p>
+  </form>
+
+  <div id="adminVideos">
+    <p>Loading videos...</p>
+  </div>
+</section>
+    <section class="admin-panel"> 
+    <div class="panel-heading"><h2>All memory albums</h2><span id="albumCount" class="pill">0 albums</span></div>
       <div id="adminAlbums" class="admin-list"><div class="loading">Loading albums…</div></div>
     </section>
-  </main>
+    </main>
 </body>
 </html>
