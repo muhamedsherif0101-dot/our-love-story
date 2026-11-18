@@ -2,6 +2,7 @@
   const db = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_PUBLISHABLE_KEY);
   const $ = id => document.getElementById(id);
   const BUCKET = "memory-photos";
+const VIDEO_BUCKET = "memory-videos";
   let albumsCache = [];
   const editableContent = [
     ["hero_eyebrow","Hero — small heading","A LITTLE PLACE FOR OUR FOREVER",false],
@@ -61,9 +62,28 @@
   async function refresh() {
     const { data, error } = await db.from("albums").select("id,title,event_date,story,created_at,album_photos(id,storage_path),album_music(id,storage_path,title)").order("created_at",{ascending:false});
     if (error) { $("adminAlbums").textContent="Could not load albums."; console.error(error); return; }
-    albumsCache=data||[]; $("albumCount").textContent=`${albumsCache.length} albums`;
+    albumsCache = data || [];
+$("albumCount").textContent = `${albumsCache.length} albums`;
+
+const videoAlbum = $("videoAlbum");
+const selectedAlbum = videoAlbum.value;
+
+videoAlbum.innerHTML = '<option value="">No album</option>';
+
+for (const album of albumsCache) {
+  const option = document.createElement("option");
+  option.value = album.id;
+  option.textContent = album.title;
+  videoAlbum.appendChild(option);
+}
+
+videoAlbum.value = selectedAlbum;
     const list=$("adminAlbums"); list.innerHTML="";
-    if (!albumsCache.length) { list.innerHTML='<p class="muted arabic" dir="rtl">لسه مفيش ألبومات. ابدأ بأول ذكرى ❤️</p>'; return; }
+    if (!albumsCache.length) {
+  list.innerHTML = '<p class="muted arabic" dir="rtl">لسه مفيش ألبومات. ابدأ بأول ذكرى ❤️</p>';
+  await loadAdminVideos();
+  return;
+}
     for (const a of albumsCache) {
       const row=document.createElement("div"); row.className="admin-album-row";
       const info=document.createElement("div"); const h=document.createElement("strong"); h.textContent=a.title;
@@ -74,6 +94,7 @@
       const del=document.createElement("button"); del.className="danger-btn small-btn"; del.textContent="Delete"; del.onclick=()=>deleteAlbum(a);
       actions.append(edit,del); row.append(info,actions); list.append(row);
     }
+ await loadAdminVideos();
   }
   function editAlbum(a) {
     $("albumId").value=a.id; $("title").value=a.title; $("eventDate").value=a.event_date||""; $("story").value=a.story||"";
@@ -111,6 +132,142 @@
     const {error:dbErr}=await db.from("album_photos").insert({album_id:albumId,storage_path:path,sort_order:index});
     if (dbErr) { await db.storage.from(BUCKET).remove([path]); throw dbErr; }
   }
+    async function uploadVideo(file) {
+    if (!file) throw new Error("Please choose a video.");
+
+    const ext = (file.name.split(".").pop() || "").toLowerCase();
+    if (!["mp4", "mov", "m4v"].includes(ext) && !file.type.startsWith("video/")) {
+      throw new Error("Please choose an MP4, MOV, or M4V video.");
+    }
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+    const path = `videos/${Date.now()}-${safeName}`;
+    const contentType = file.type || (
+      ext === "mov" ? "video/quicktime" : "video/mp4"
+    );
+
+    const { error: uploadError } = await db.storage
+      .from(VIDEO_BUCKET)
+      .upload(path, file, { upsert: false, contentType });
+
+    if (uploadError) throw uploadError;
+
+    const albumId = $("videoAlbum").value || null;
+
+    const { error: saveError } = await db.from("album_videos").insert({
+      album_id: albumId,
+      storage_path: path,
+      title: $("videoTitle").value.trim(),
+      description: $("videoDescription").value.trim() || null,
+      show_in_section: $("showVideoInSection").checked
+    });
+
+    if (saveError) {
+      await db.storage.from(VIDEO_BUCKET).remove([path]);
+      throw saveError;
+    }
+  }
+
+  async function loadAdminVideos() {
+    const holder = $("adminVideos");
+    holder.innerHTML = '<p class="loading">Loading videos...</p>';
+
+    const { data, error } = await db
+      .from("album_videos")
+      .select("id,album_id,storage_path,title,description,show_in_section,created_at")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      holder.textContent = "Could not load videos.";
+      console.error(error);
+      return;
+    }
+
+    holder.innerHTML = "";
+
+    if (!data || !data.length) {
+      holder.innerHTML = '<p class="muted">No videos uploaded yet.</p>';
+      return;
+    }
+
+    for (const video of data) {
+      const row = document.createElement("div");
+      row.className = "admin-album-row";
+
+      const info = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = video.title;
+
+      const album = albumsCache.find(a => a.id === video.album_id);
+      const details = document.createElement("p");
+      details.textContent =
+        `${album ? "Album: " + album.title : "No album"} · ` +
+        `${video.show_in_section ? "Shown in Our Videos" : "Album only"}`;
+
+      info.append(title, details);
+
+      if (video.description) {
+        const desc = document.createElement("p");
+        desc.textContent = video.description;
+        info.appendChild(desc);
+      }
+
+      const del = document.createElement("button");
+      del.className = "danger-btn small-btn";
+      del.textContent = "Delete";
+      del.onclick = () => deleteVideo(video);
+
+      row.append(info, del);
+      holder.appendChild(row);
+    }
+  }
+
+  async function deleteVideo(video) {
+    if (!confirm(`Delete "${video.title}"? This cannot be undone.`)) return;
+
+    try {
+      const { error: storageError } = await db.storage
+        .from(VIDEO_BUCKET)
+        .remove([video.storage_path]);
+
+      if (storageError) throw storageError;
+
+      const { error: dbError } = await db
+        .from("album_videos")
+        .delete()
+        .eq("id", video.id);
+
+      if (dbError) throw dbError;
+
+      await loadAdminVideos();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Could not delete video.");
+    }
+  }
+
+  $("videoForm").addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const btn = $("saveVideoBtn");
+    const status = $("videoMessage");
+    const file = $("videoFile").files[0];
+
+    btn.disabled = true;
+    status.textContent = "Uploading video... Please wait.";
+
+    try {
+      await uploadVideo(file);
+      status.textContent = "Video uploaded successfully! ❤️";
+      $("videoForm").reset();
+      await loadAdminVideos();
+    } catch (err) {
+      console.error(err);
+      status.textContent = err.message || "Could not upload video.";
+    } finally {
+      btn.disabled = false;
+    }
+  });
   $("albumForm").addEventListener("submit",async e=>{
     e.preventDefault(); $("saveBtn").disabled=true; message("Saving your memory…");
     try {
