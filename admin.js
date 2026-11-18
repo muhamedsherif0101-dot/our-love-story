@@ -26,7 +26,7 @@
   function contentStatus(text,bad=false){ $("contentMessage").textContent=text; $("contentMessage").className=bad?"message error":"message success"; }
   async function loadEditableContent(){
     const holder=$("contentFields");
-    holder.innerHTML="";'<div class="loading">Loading editable messages…</div>';
+    holder.innerHTML="";
     const timeout=setTimeout(()=>{ if(holder.querySelector(".loading")) holder.innerHTML='<p class="error">Loading timed out. Check your connection and Supabase settings, then refresh.</p>'; },12000);
     const {data,error}=await db.from("site_content").select("content_key,content_value");
     clearTimeout(timeout);
