@@ -67,7 +67,150 @@
       holder.appendChild(card);
     }
   }
-  async function openAlbum(album, photos, songs=[]) {
+
+async function openAlbum(album, photos, songs = []) {
+  $("albumTitle").textContent = album.title;
+  $("albumDate").textContent = formatDate(album.event_date);
+  $("albumStory").textContent = album.story || "";
+  $("albumPhotos").innerHTML = '<div class="loading">Opening memory…</div>';
+  $("albumModal").classList.add("visible");
+
+  const grid = $("albumPhotos");
+  const oldMusic = $("albumMusic");
+  if (oldMusic) oldMusic.remove();
+
+  // Album music
+  if (songs.length) {
+    try {
+      const audioUrl = await signedMedia(songs[0].storage_path);
+      const musicBox = document.createElement("section");
+      musicBox.id = "albumMusic";
+      musicBox.className = "album-music";
+
+      const heading = document.createElement("h3");
+      heading.textContent = "♪ A song for this memory";
+
+      const name = document.createElement("p");
+      name.textContent = songs[0].title || "Our album song";
+
+      const player = document.createElement("audio");
+      player.controls = true;
+      player.preload = "none";
+      player.src = audioUrl;
+
+      musicBox.append(heading, name, player);
+      $("albumStory").after(musicBox);
+    } catch (e) {
+      console.error("Music error:", e);
+    }
+  }
+
+  grid.innerHTML = "";
+
+  if (!photos.length) {
+    grid.innerHTML =
+      '<p class="muted arabic" dir="rtl">الألبوم ده لسه مستني صوره ❤️</p>';
+    return;
+  }
+
+  // Load signed photo URLs
+  const gallery = [];
+
+  for (const photo of photos) {
+    try {
+      const url = await signedPhoto(photo.storage_path);
+      gallery.push({
+        url,
+        caption: photo.caption || ""
+      });
+    } catch (e) {
+      console.error("Photo error:", e);
+    }
+  }
+
+  if (!gallery.length) {
+    grid.innerHTML = '<p class="error">Could not load photos.</p>';
+    return;
+  }
+
+  let currentIndex = 0;
+
+  const viewer = document.createElement("div");
+  viewer.className = "mobile-gallery";
+
+  const stage = document.createElement("div");
+  stage.className = "gallery-stage";
+
+  const image = document.createElement("img");
+  image.className = "gallery-image";
+  image.alt = album.title;
+  image.draggable = false;
+
+  const previous = document.createElement("button");
+  previous.className = "gallery-arrow gallery-prev";
+  previous.type = "button";
+  previous.textContent = "‹";
+  previous.setAttribute("aria-label", "Previous photo");
+
+  const next = document.createElement("button");
+  next.className = "gallery-arrow gallery-next";
+  next.type = "button";
+  next.textContent = "›";
+  next.setAttribute("aria-label", "Next photo");
+
+  const caption = document.createElement("p");
+  caption.className = "gallery-caption";
+
+  const counter = document.createElement("div");
+  counter.className = "gallery-counter";
+
+  function showPhoto(index) {
+    currentIndex = (index + gallery.length) % gallery.length;
+
+    image.src = gallery[currentIndex].url;
+    caption.textContent = gallery[currentIndex].caption;
+    counter.textContent = `${currentIndex + 1} / ${gallery.length}`;
+
+    previous.disabled = gallery.length < 2;
+    next.disabled = gallery.length < 2;
+  }
+
+  previous.addEventListener("click", () => {
+    showPhoto(currentIndex - 1);
+  });
+
+  next.addEventListener("click", () => {
+    showPhoto(currentIndex + 1);
+  });
+
+  // Touch swipe
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  stage.addEventListener("touchstart", e => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+
+  stage.addEventListener("touchend", e => {
+    const endX = e.changedTouches[0].screenX;
+    const endY = e.changedTouches[0].screenY;
+    const diffX = endX - touchStartX;
+    const diffY = endY - touchStartY;
+
+    if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX < 0) showPhoto(currentIndex + 1);
+      else showPhoto(currentIndex - 1);
+    }
+  }, { passive: true });
+
+  stage.append(image, previous, next);
+  viewer.append(stage, counter, caption);
+  grid.appendChild(viewer);
+
+  showPhoto(0);
+}
+
     $("albumTitle").textContent = album.title;
     $("albumDate").textContent = formatDate(album.event_date);
     $("albumStory").textContent = album.story || "";
