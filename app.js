@@ -7,6 +7,44 @@
   let currentUser = null;
 
   function showError(message) { $("loginError").textContent = message; }
+  async function loadLoveLetter() {
+  const section = $("loveLetterSection");
+  const messageEl = $("loveLetterMessage");
+
+  const { data, error } = await db
+    .from("site_content")
+    .select("content_key,content_value")
+    .in("content_key", ["love_letter_enabled", "love_letter_message"]);
+
+  if (error) {
+    console.error("Love letter settings error:", error);
+    return;
+  }
+
+  const settings = Object.fromEntries(
+    (data || []).map(item => [item.content_key, item.content_value])
+  );
+
+  if (settings.love_letter_enabled !== "true") {
+    section.classList.add("hidden");
+    return;
+  }
+
+  messageEl.textContent = settings.love_letter_message || "كل لحظة معاكي بتخلّي حياتي أجمل يا لولا ❤️";
+  section.classList.remove("hidden");
+}
+
+function setupLoveLetter() {
+  $("openLoveLetter").addEventListener("click", () => {
+    $("loveLetterContent").classList.remove("hidden");
+    $("openLoveLetter").classList.add("hidden");
+  });
+
+  $("closeLoveLetter").addEventListener("click", () => {
+    $("loveLetterContent").classList.add("hidden");
+    $("openLoveLetter").classList.remove("hidden");
+  });
+}
   async function getRole(userId) {
     const { data, error } = await db.from("user_roles").select("role").eq("user_id", userId).maybeSingle();
     if (error) throw error;
@@ -414,6 +452,8 @@ $("albumModal").classList.add("photo-view-mode");
         const link = document.createElement("a"); link.href = "admin.html"; link.textContent = "Admin Studio"; document.querySelector("nav").prepend(link);
       }
       await loadSiteContent();
+      setupLoveLetter();
+await loadLoveLetter();
       await loadAlbums();
     } catch(err) { console.error(err); showError("Could not verify account permissions. Please try again."); }
   });
@@ -429,6 +469,8 @@ $("albumModal").classList.add("photo-view-mode");
           $("loginModal").classList.remove("visible"); $("logoutBtn").classList.remove("hidden");
           if (role === "admin") { const link=document.createElement("a"); link.href="admin.html"; link.textContent="Admin Studio"; document.querySelector("nav").prepend(link); }
           await loadSiteContent();
+          setupLoveLetter();
+await loadLoveLetter();
           await loadAlbums(); return;
         }
       } catch(e) { console.error(e); }
