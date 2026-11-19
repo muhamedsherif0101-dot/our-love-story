@@ -305,7 +305,7 @@ for (const song of songs) {
   async function loadAlbums() {
     const holder = $("albums");
     await loadVideos();
-    const { data, error } = await db.from("albums").select("id,title,event_date,story,cover_path,album_photos(id,storage_path,caption,sort_order),album_music(id,storage_path,title)").order("event_date", { ascending:false, nullsFirst:false });
+    const { data, error } = await db.from("albums").select("id,title,event_date,story,cover_path,sort_order,album_photos(id,storage_path,caption,sort_order),album_music(id,storage_path,title)").order("sort_order", { ascending: true, nullsFirst: false }).order("event_date", { ascending: false, nullsFirst: false });
     if (error) { holder.innerHTML = '<p class="error">Could not load albums. Please refresh and try again.</p>'; console.error(error); return; }
     if (!data?.length) { holder.innerHTML = '<div class="empty-state"><span>♡</span><h3>Our story starts here</h3><p class="arabic" dir="rtl">لسه هنملى المكان ده بذكرياتنا الحلوة.</p></div>'; return; }
     holder.innerHTML = "";
