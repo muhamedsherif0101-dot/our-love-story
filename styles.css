@@ -316,3 +316,126 @@ html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);
     max-height: 60vh;
   }
 }
+/* Lola's Surprise Love Letter */
+.love-letter-section {
+  text-align: center;
+  padding: 45px 20px 55px;
+  background: linear-gradient(180deg, #100c13, #09090d);
+  border-bottom: 1px solid #302631;
+}
+
+.love-letter-section > p {
+  color: #d8b7c7;
+  margin: 12px 0 25px;
+}
+
+.love-envelope {
+  position: relative;
+  width: min(280px, 85vw);
+  height: 175px;
+  border: 1px solid #9b5877;
+  border-radius: 8px;
+  background: linear-gradient(145deg, #71334f, #351b32);
+  box-shadow: 0 15px 40px #0008;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform .3s, box-shadow .3s;
+}
+
+.love-envelope:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 45px #c8799b33;
+}
+
+.love-envelope::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(145deg, transparent 49%, #51243e 50%);
+  clip-path: polygon(0 0, 100% 0, 50% 65%);
+}
+
+.love-envelope::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(35deg, #472039, #71334f);
+  clip-path: polygon(0 100%, 50% 48%, 100% 100%);
+}
+
+.envelope-heart {
+  position: absolute;
+  z-index: 3;
+  top: 48%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #d8b77a;
+  color: #71334f;
+  font-size: 20px;
+  box-shadow: 0 3px 12px #0005;
+}
+
+.envelope-text {
+  position: absolute;
+  z-index: 4;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  color: white;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.love-letter-content {
+  max-width: 650px;
+  margin: 30px auto 0;
+  padding: 30px 24px;
+  background: linear-gradient(145deg, #f4e5d9, #e9d3d0);
+  color: #49313c;
+  border-radius: 5px;
+  box-shadow: 0 15px 45px #0008;
+  animation: letterAppear .6s ease;
+}
+
+.love-letter-content h2 {
+  font-family: Georgia, serif;
+  color: #8e4966;
+  margin: 0 0 22px;
+}
+
+.love-letter-content p {
+  color: #49313c;
+  font-size: 16px;
+  line-height: 2.2;
+  white-space: pre-wrap;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.love-letter-content .secondary-btn {
+  margin-top: 18px;
+}
+
+@keyframes letterAppear {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .love-letter-section {
+    padding: 35px 14px 42px;
+  }
+
+  .love-letter-content {
+    padding: 24px 17px;
+  }
+
+  .love-letter-content p {
+    font-size: 15px;
+  }
+}
