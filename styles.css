@@ -487,3 +487,26 @@ html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);
 .love-letter-section.letter-minimized .envelope-heart {
   top: 50%;
 }
+/* Album story expand */
+.album-card.story-expanded {
+  height: auto;
+  min-height: 0;
+}
+
+.album-story-preview.expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+.album-story-toggle {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 5px 12px;
+  border: 1px solid rgba(216,183,122,.35);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--gold);
+  font-size: 12px;
+  cursor: pointer;
+}
