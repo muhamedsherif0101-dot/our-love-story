@@ -510,3 +510,36 @@ html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);
   font-size: 12px;
   cursor: pointer;
 }
+/* Compact and scrollable love letter */
+.love-letter-content {
+  width: min(520px, 92vw);
+  max-height: 78dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 22px;
+}
+
+#loveLetterMessage {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 48dvh;
+  overflow-y: auto;
+  padding: 0 10px 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #c8799b transparent;
+  overscroll-behavior: contain;
+}
+
+#loveLetterMessage::-webkit-scrollbar {
+  width: 5px;
+}
+
+#loveLetterMessage::-webkit-scrollbar-thumb {
+  background: #c8799b;
+  border-radius: 10px;
+}
+
+.love-letter-content .secondary-btn {
+  flex-shrink: 0;
+}
