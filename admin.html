@@ -80,10 +80,23 @@
     <p>Loading videos...</p>
   </div>
 </section>
-    <section class="admin-panel"> 
-    <div class="panel-heading"><h2>All memory albums</h2><span id="albumCount" class="pill">0 albums</span></div>
-      <div id="adminAlbums" class="admin-list"><div class="loading">Loading albums…</div></div>
-    </section>
+    <section class="admin-panel">
+  <div class="panel-heading">
+    <h2>All memory albums</h2>
+    <span id="albumCount" class="pill">0 albums</span>
+  </div>
+
+  <p class="muted">Drag and drop albums to arrange their order on the website.</p>
+
+  <div class="button-row">
+    <button type="button" class="primary-btn" id="saveAlbumOrderBtn">Save Order</button>
+    <span id="albumOrderMessage" class="message" role="status"></span>
+  </div>
+
+  <div id="adminAlbums" class="admin-list">
+    <div class="loading">Loading albums…</div>
+  </div>
+</section>
     </main>
 </body>
 </html>
