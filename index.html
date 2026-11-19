@@ -12,7 +12,26 @@
 </head>
 <body>
   <header class="topbar"><a class="brand" href="#">A Love That Never Ends <span>♡</span></a><nav><a href="#counter">Our Time</a><a href="#memories">Our Memories</a><button id="logoutBtn" class="text-button hidden">Log out</button></nav></header>
-  <main>
+ <main>
+    <!-- Lola's Surprise Letter -->
+    <section id="loveLetterSection" class="love-letter-section hidden">
+      <div class="section-kicker">A LITTLE SURPRISE FOR YOU</div>
+      <p class="arabic" dir="rtl">فيه جواب صغير مستنيكي يا لولا ❤️</p>
+
+      <button id="openLoveLetter" class="love-envelope" type="button">
+        <span class="envelope-heart">♥</span>
+        <span class="envelope-text">Open your letter</span>
+      </button>
+
+      <div id="loveLetterContent" class="love-letter-content hidden">
+        <h2>To My Lola ♡</h2>
+        <p id="loveLetterMessage" class="arabic" dir="rtl"></p>
+        <button id="closeLoveLetter" class="secondary-btn" type="button">
+          Close my letter ♡
+        </button>
+      </div>
+    </section>
+
     <section class="hero">
       <div class="eyebrow" data-content="hero_eyebrow">A LITTLE PLACE FOR OUR FOREVER</div>
       <h1><span data-content="hero_title">Every moment with you</span><br><em data-content="hero_title_em">is my favorite.</em></h1>
