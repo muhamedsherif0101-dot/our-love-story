@@ -32,19 +32,43 @@
 
   messageEl.textContent = settings.love_letter_message || "كل لحظة معاكي بتخلّي حياتي أجمل يا لولا ❤️";
   section.classList.remove("hidden");
+section.classList.add("letter-gate");
+document.body.style.overflow = "hidden";
 }
 
 function setupLoveLetter() {
-  $("openLoveLetter").addEventListener("click", () => {
-    $("loveLetterContent").classList.remove("hidden");
-    $("openLoveLetter").classList.add("hidden");
-  });
+  const section = $("loveLetterSection");
+  const openBtn = $("openLoveLetter");
+  const letter = $("loveLetterContent");
+  const closeBtn = $("closeLoveLetter");
+  const navBtn = $("navLoveLetter");
 
-  $("closeLoveLetter").addEventListener("click", () => {
-    $("loveLetterContent").classList.add("hidden");
-    $("openLoveLetter").classList.remove("hidden");
-  });
+  function openLetter() {
+    section.classList.remove("hidden", "letter-minimized");
+    section.classList.add("letter-gate");
+    document.body.style.overflow = "hidden";
+
+    letter.classList.remove("hidden");
+    openBtn.classList.add("hidden");
+  }
+
+  function closeLetter() {
+    letter.classList.add("hidden");
+    openBtn.classList.remove("hidden");
+
+    section.classList.remove("letter-gate");
+    section.classList.add("hidden");
+
+    document.body.style.overflow = "";
+    navBtn.classList.remove("hidden");
+  }
+
+  openBtn.addEventListener("click", openLetter);
+  navBtn.addEventListener("click", openLetter);
+  closeBtn.addEventListener("click", closeLetter);
 }
+
+ 
   async function getRole(userId) {
     const { data, error } = await db.from("user_roles").select("role").eq("user_id", userId).maybeSingle();
     if (error) throw error;
