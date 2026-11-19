@@ -84,7 +84,7 @@ const VIDEO_BUCKET = "memory-videos";
   function message(text, bad=false) { $("formMessage").textContent=text; $("formMessage").className=bad?"message error":"message success"; }
   function slug(text) { return text.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") || "memory"; }
   async function refresh() {
-    const { data, error } = await db.from("albums").select("id,title,event_date,story,created_at,album_photos(id,storage_path),album_music(id,storage_path,title)").order("created_at",{ascending:false});
+   const { data, error } = await db.from("albums").select("id,title,event_date,story,created_at,sort_order,album_photos(id,storage_path),album_music(id,storage_path,title)").order("sort_order",{ascending:true,nullsFirst:false}).order("created_at",{ascending:false});
     if (error) { $("adminAlbums").textContent="Could not load albums."; console.error(error); return; }
     albumsCache = data || [];
 $("albumCount").textContent = `${albumsCache.length} albums`;
