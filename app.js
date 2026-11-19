@@ -92,7 +92,43 @@ function createVideoCard(video) {
   card.append(title, description, button, message, player);
   return card;
 }
-let globalPlaylist = [];
+
+async function loadVideos() {
+  const holder = $("videosGrid");
+  if (!holder) return;
+
+  holder.innerHTML = '<div class="loading">Loading our videos…</div>';
+
+  const { data, error } = await db
+    .from("album_videos")
+    .select("id,album_id,storage_path,title,description,show_in_section,created_at")
+    .eq("show_in_section", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Videos loading error:", error);
+    holder.innerHTML = '<p class="error">Could not load our videos.</p>';
+    return;
+  }
+
+  holder.innerHTML = "";
+
+  if (!data || !data.length) {
+    holder.innerHTML = `
+      <div class="empty-state">
+        <span>♡</span>
+        <h3>Our little movie collection</h3>
+        <p class="arabic" dir="rtl">لسه هنضيف فيديوهاتنا الحلوة هنا ❤️</p>
+      </div>`;
+    return;
+  }
+
+  data.forEach(video => {
+    holder.appendChild(createVideoCard(video));
+  });
+}
+
+  let globalPlaylist = [];
 let currentTrackIndex = 0;
 
 async function setupGlobalPlaylist(albums) {
@@ -235,40 +271,6 @@ card.append(img, body);
       holder.appendChild(card);
     }
 await setupGlobalPlaylist(data);
- async function loadVideos() {
-  const holder = $("videosGrid");
-  if (!holder) return;
-
-  holder.innerHTML = '<div class="loading">Loading our videos…</div>';
-
-  const { data, error } = await db
-    .from("album_videos")
-    .select("id,album_id,storage_path,title,description,show_in_section,created_at")
-    .eq("show_in_section", true)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Videos loading error:", error);
-    holder.innerHTML = '<p class="error">Could not load our videos.</p>';
-    return;
-  }
-
-  holder.innerHTML = "";
-
-  if (!data || !data.length) {
-    holder.innerHTML = `
-      <div class="empty-state">
-        <span>♡</span>
-        <h3>Our little movie collection</h3>
-        <p class="arabic" dir="rtl">لسه هنضيف فيديوهاتنا الحلوة هنا ❤️</p>
-      </div>`;
-    return;
-  }
-
-  data.forEach(video => {
-    holder.appendChild(createVideoCard(video));
-  });
-}
 
   }
 
