@@ -323,11 +323,42 @@ for (const song of songs) {
       const date = document.createElement("span"); date.className = "album-date"; date.textContent = formatDate(album.event_date);
       const title = document.createElement("h3"); title.textContent = album.title;
       const count = document.createElement("p"); count.textContent = `${photos.length} ${photos.length === 1 ? "photo" : "photos"}`;
-      const story = document.createElement("p");
+      
+const story = document.createElement("p");
 story.className = "album-story-preview";
 story.textContent = album.story || "";
 
-body.append(date, title, story, count);
+body.append(date, title, story);
+
+if (album.story && album.story.length > 100) {
+  const toggle = document.createElement("span");
+  toggle.className = "album-story-toggle";
+  toggle.textContent = "Show more";
+  toggle.setAttribute("role", "button");
+  toggle.setAttribute("tabindex", "0");
+
+  function toggleStory(e) {
+    e.stopPropagation();
+
+    const expanded = story.classList.toggle("expanded");
+    card.classList.toggle("story-expanded", expanded);
+    toggle.textContent = expanded ? "Show less" : "Show more";
+  }
+
+  toggle.addEventListener("click", toggleStory);
+
+  toggle.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggleStory(e);
+    }
+  });
+
+  body.appendChild(toggle);
+}
+
+body.appendChild(count);
+
 card.append(img, body);
       card.addEventListener("click", () => openAlbum(album, photos, album.album_music || []));
       holder.appendChild(card);
