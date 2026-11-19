@@ -22,7 +22,9 @@ const VIDEO_BUCKET = "memory-videos";
     ["login_kicker","Login — small heading","A PRIVATE LITTLE WORLD",false],
     ["login_title","Login — title","Welcome back",false],
     ["login_message","Login — Arabic message","ادخلي عشان تشوفي ذكرياتنا الجميلة ❤️",true],
-    ["login_button","Login — button","Enter our world",false]
+    ["login_button","Login — button","Enter our world",false],
+["love_letter_message","Love Letter — Arabic message","يا لولا، وجودك في حياتي أجمل صدفة وأحلى حكاية ❤️",true],
+["love_letter_enabled","Love Letter — Visibility","true",false]
   ];
   function contentStatus(text,bad=false){ $("contentMessage").textContent=text; $("contentMessage").className=bad?"message error":"message success"; }
   async function loadEditableContent(){
@@ -35,17 +37,39 @@ const VIDEO_BUCKET = "memory-videos";
     const values=Object.fromEntries((data||[]).map(x=>[x.content_key,x.content_value]));
     holder.innerHTML="";
     for(const [key,label,placeholder,arabic] of editableContent){
-      const wrap=document.createElement("label"); wrap.textContent=label;
-      const input=document.createElement(arabic?"textarea":"input");
-      input.dataset.contentKey=key; input.value=values[key] ?? placeholder; input.placeholder=placeholder;
-      if(arabic){input.dir="rtl";input.rows=3;} else input.maxLength=300;
-      wrap.appendChild(input); holder.appendChild(wrap);
+  const wrap=document.createElement("label");
+  wrap.textContent=label;
+
+  const input = document.createElement(
+    key === "love_letter_enabled" ? "input" : (arabic ? "textarea" : "input")
+  );
+
+  if(key === "love_letter_enabled"){
+    input.type = "checkbox";
+    input.checked = (values[key] ?? placeholder) === "true";
+  } else {
+    input.value = values[key] ?? placeholder;
+    input.placeholder = placeholder;
+    if(arabic){
+      input.dir = "rtl";
+      input.rows = 3;
+    } else {
+      input.maxLength = 300;
     }
+  }
+
+  input.dataset.contentKey = key;
+  wrap.appendChild(input);
+  holder.appendChild(wrap);
+}
   }
   async function saveEditableContent(e){
     e.preventDefault(); const btn=$("saveContentBtn"); btn.disabled=true; contentStatus("Saving messages…");
     try{
-      const rows=Array.from(document.querySelectorAll("[data-content-key]")).map(el=>({content_key:el.dataset.contentKey,content_value:el.value.trim()}));
+     const rows=Array.from(document.querySelectorAll("[data-content-key]")).map(el=>({
+  content_key:el.dataset.contentKey,
+  content_value:el.type==="checkbox" ? String(el.checked) : el.value.trim()
+}));
       const {error}=await db.from("site_content").upsert(rows,{onConflict:"content_key"}); if(error) throw error;
       contentStatus("Saved! The website messages have been updated.");
     }catch(err){console.error(err);contentStatus(err.message||"Could not save messages. Check the SQL setup and admin policy.",true);}
