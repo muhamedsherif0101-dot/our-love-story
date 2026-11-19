@@ -108,18 +108,96 @@ videoAlbum.value = selectedAlbum;
   await loadAdminVideos();
   return;
 }
-    for (const a of albumsCache) {
-      const row=document.createElement("div"); row.className="admin-album-row";
-      const info=document.createElement("div"); const h=document.createElement("strong"); h.textContent=a.title;
-      const p=document.createElement("p"); p.textContent=`${a.event_date||"No date"} · ${(a.album_photos||[]).length} photos · ${(a.album_music||[]).length ? "song added" : "no song"}`;
-      info.append(h,p);
-      const actions=document.createElement("div"); actions.className="row-actions";
-      const edit=document.createElement("button"); edit.className="secondary-btn small-btn"; edit.textContent="Edit"; edit.onclick=()=>editAlbum(a);
-      const del=document.createElement("button"); del.className="danger-btn small-btn"; del.textContent="Delete"; del.onclick=()=>deleteAlbum(a);
-      actions.append(edit,del); row.append(info,actions); list.append(row);
-    }
+  for (const a of albumsCache) {
+  const row = document.createElement("div");
+  row.className = "admin-album-row";
+  row.draggable = true;
+  row.dataset.albumId = a.id;
+  row.style.cursor = "grab";
+
+  row.addEventListener("dragstart", e => {
+    row.classList.add("dragging");
+    e.dataTransfer.setData("text/plain", a.id);
+    e.dataTransfer.effectAllowed = "move";
+  });
+
+  row.addEventListener("dragend", () => {
+    row.classList.remove("dragging");
+  });
+
+  row.addEventListener("dragover", e => {
+    e.preventDefault();
+    const dragging = list.querySelector(".dragging");
+    if (!dragging || dragging === row) return;
+
+    const rect = row.getBoundingClientRect();
+    const after = e.clientY > rect.top + rect.height / 2;
+    list.insertBefore(dragging, after ? row.nextSibling : row);
+  });
+
+  const info = document.createElement("div");
+  const h = document.createElement("strong");
+  h.textContent = a.title;
+
+  const p = document.createElement("p");
+  p.textContent = `${a.event_date || "No date"} · ${(a.album_photos || []).length} photos · ${(a.album_music || []).length ? "song added" : "no song"}`;
+
+  info.append(h, p);
+
+  const actions = document.createElement("div");
+  actions.className = "row-actions";
+
+  const edit = document.createElement("button");
+  edit.className = "secondary-btn small-btn";
+  edit.textContent = "Edit";
+  edit.onclick = () => editAlbum(a);
+
+  const del = document.createElement("button");
+  del.className = "danger-btn small-btn";
+  del.textContent = "Delete";
+  del.onclick = () => deleteAlbum(a);
+
+  actions.append(edit, del);
+  row.append(info, actions);
+  list.append(row);
+}
  await loadAdminVideos();
   }
+  async function saveAlbumOrder() {
+  const btn = $("saveAlbumOrderBtn");
+  const status = $("albumOrderMessage");
+  const rows = Array.from(
+    $("adminAlbums").querySelectorAll(".admin-album-row")
+  );
+
+  btn.disabled = true;
+  status.textContent = "Saving order…";
+  status.className = "message";
+
+  try {
+    for (let i = 0; i < rows.length; i++) {
+      const { error } = await db
+        .from("albums")
+        .update({ sort_order: i })
+        .eq("id", rows[i].dataset.albumId);
+
+      if (error) throw error;
+    }
+
+    status.textContent = "Album order saved! ❤️";
+    status.className = "message success";
+
+    await refresh();
+  } catch (err) {
+    console.error(err);
+    status.textContent = err.message || "Could not save album order.";
+    status.className = "message error";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+$("saveAlbumOrderBtn").addEventListener("click", saveAlbumOrder);
   function editAlbum(a) {
     $("albumId").value=a.id; $("title").value=a.title; $("eventDate").value=a.event_date||""; $("story").value=a.story||"";
     $("formHeading").textContent="Edit memory album"; $("saveBtn").textContent="Save changes"; $("cancelEdit").classList.remove("hidden");
