@@ -5,7 +5,19 @@
   const BUCKET = "memory-photos";
   const VIDEO_BUCKET = "memory-videos";
   let currentUser = null;
+async function sendLolaLoginAlert() {
+  if (!currentUser) return;
 
+  try {
+    const { error } = await db.functions.invoke("lola-login-alert");
+
+    if (error) {
+      console.error("Login alert failed:", error);
+    }
+  } catch (err) {
+    console.error("Login alert failed:", err);
+  }
+}
   function showError(message) { $("loginError").textContent = message; }
   async function loadLoveLetter() {
   const section = $("loveLetterSection");
@@ -502,6 +514,7 @@ $("albumModal").classList.add("photo-view-mode");
       const role = await getRole(currentUser.id);
       if (!["admin","viewer"].includes(role)) { await db.auth.signOut(); showError("This account has no access to this private website."); return; }
       $("loginModal").classList.remove("visible");
+      if (role === "viewer") await sendLolaLoginAlert();
       $("logoutBtn").classList.remove("hidden");
       if (role === "admin") {
         const link = document.createElement("a"); link.href = "admin.html"; link.textContent = "Admin Studio"; document.querySelector("nav").prepend(link);
@@ -522,6 +535,7 @@ await loadLoveLetter();
         const role = await getRole(currentUser.id);
         if (["admin","viewer"].includes(role)) {
           $("loginModal").classList.remove("visible"); $("logoutBtn").classList.remove("hidden");
+          if (role === "viewer") await sendLolaLoginAlert();
           if (role === "admin") { const link=document.createElement("a"); link.href="admin.html"; link.textContent="Admin Studio"; document.querySelector("nav").prepend(link); }
           await loadSiteContent();
           setupLoveLetter();
