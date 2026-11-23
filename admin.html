@@ -11,92 +11,83 @@
   <script defer src="admin.js"></script>
 </head>
 <body class="admin-body">
-  <header class="topbar"><a class="brand" href="index.html">A Love That Never Ends <span>♡</span></a><nav><a href="index.html">View website</a><button id="logoutBtn" class="text-button">Log out</button></nav></header>
+  <header class="topbar">
+    <a class="brand" href="index.html">A Love That Never Ends <span>♡</span></a>
+    <nav><a href="index.html">View website</a><button id="logoutBtn" class="text-button" type="button">Log out</button></nav>
+  </header>
   <main class="admin-main">
-    <div class="admin-heading"><div><div class="section-kicker">YOUR PRIVATE CONTROL ROOM</div><h1>Memory Studio</h1><p class="arabic muted" dir="rtl">ضيف ذكرى جديدة وخلي كل لحظة في مكانها.</p></div></div>
+    <div class="admin-heading">
+      <div><div class="section-kicker">YOUR PRIVATE CONTROL ROOM</div><h1>Memory Studio</h1>
+      <p class="arabic muted" dir="rtl">كل ذكرى ليها مكانها، وكل رسالة ليها حكايتها ❤️</p></div>
+      <div class="admin-heading-mark">♡</div>
+    </div>
 
-    <section class="admin-panel">
-      <div class="panel-heading"><h2>Website messages</h2><span class="pill">Editable content</span></div>
-      <p class="arabic muted" dir="rtl">عدّل أي رسالة من رسائل الموقع واحفظها. التغيير هيظهر للولو في الصفحة الرئيسية.</p>
-      <form id="contentForm" class="stack">
-        <div id="contentFields" class="content-fields"><div class="loading">Loading editable messages…</div></div>
-        <button class="primary-btn" id="saveContentBtn" type="submit">Save website messages</button>
-        <p id="contentMessage" class="message" role="status"></p>
-      </form>
+    <section class="admin-panel editor-shortcut">
+      <div class="panel-heading"><div><span class="section-kicker">PERSONALIZE OUR WORLD</span><h2>Website messages</h2></div><span class="pill">Content</span></div>
+      <p class="arabic muted" dir="rtl">عدّل الكلام اللي ظاهر في الصفحة الرئيسية من زرار واحد.</p>
+      <button class="primary-btn" id="toggleContentEditor" type="button" aria-expanded="false">Edit Website</button>
+      <div id="contentEditorPanel" class="editor-panel hidden">
+        <form id="contentForm" class="stack">
+          <div id="contentFields" class="content-fields"><div class="loading">Loading editable messages…</div></div>
+          <button class="primary-btn" id="saveContentBtn" type="submit">Save Changes</button>
+          <p id="contentMessage" class="message" role="status"></p>
+        </form>
+      </div>
     </section>
-    <section class="admin-panel">
-      <h2 id="formHeading">Create a memory album</h2>
+
+    <section class="admin-panel love-letter-admin">
+      <div class="panel-heading"><div><span class="section-kicker">A LITTLE SURPRISE</span><h2>Love Letter</h2></div><span class="pill">Envelope</span></div>
+      <p class="arabic muted" dir="rtl">عدّل الرسالة اللي جوه الظرف، أو اخفي الظرف واظهره وقت ما تحب.</p>
+      <button class="secondary-btn" id="toggleLoveLetterEditor" type="button" aria-expanded="false">Edit Message</button>
+      <div id="loveLetterEditorPanel" class="editor-panel hidden">
+        <form id="loveLetterForm" class="stack">
+          <label>Message inside the envelope<textarea id="loveLetterMessageEditor" dir="rtl" rows="5" maxlength="2000"></textarea></label>
+          <label class="inline-check"><input id="loveLetterVisibility" type="checkbox"> Show the love letter on the website</label>
+          <button class="primary-btn" id="saveLoveLetterBtn" type="submit">Save Message</button>
+          <p id="loveLetterStatus" class="message" role="status"></p>
+        </form>
+      </div>
+    </section>
+
+    <section class="admin-panel album-create-panel">
+      <div class="panel-heading"><div><span class="section-kicker">SAVE A NEW CHAPTER</span><h2 id="formHeading">Create a memory album</h2></div><span class="pill">Our Memories</span></div>
       <form id="albumForm" class="stack">
         <input id="albumId" type="hidden">
         <label>Album title<input id="title" required maxlength="100" placeholder="e.g. Our first trip"></label>
         <label>Memory date<input id="eventDate" type="date"></label>
         <label>Story / message <span class="arabic hint" dir="rtl">اكتب حكاية اليوم أو رسالة للولو</span><textarea id="story" dir="rtl" rows="5" placeholder="احكي تفاصيل اليوم اللي مش عايزنا ننساه..."></textarea></label>
-        <label>Photos <span class="hint">Choose 5–6 photos, or more. When editing, new photos are added to the album.</span><input id="photos" type="file" accept="image/*" multiple></label>
-        <div id="selectedFiles" class="hint"></div>
+        <label>Photos <span class="hint">اختار صورك، وشوف معاينتها قبل الرفع. تقدر تضيف صور جديدة وانت بتعدل ألبوم.</span><input id="photos" type="file" accept="image/*" multiple></label>
+        <div id="selectedFiles" class="selected-files"><p class="hint">No photos selected yet.</p></div>
         <label>Album song (MP3) <span class="hint">اختار أغنية خاصة بالذكرى — MP3 فقط</span><input id="albumSong" type="file" accept="audio/mpeg,.mp3"></label>
-        <div id="selectedSong" class="hint"></div>
+        <div id="selectedSong" class="hint">No new song selected.</div>
         <label id="removeSongWrap" class="song-remove hidden"><input id="removeSong" type="checkbox"> Remove the current song from this album</label>
         <div class="button-row"><button class="primary-btn" type="submit" id="saveBtn">Save album</button><button class="secondary-btn hidden" type="button" id="cancelEdit">Cancel edit</button></div>
         <p id="formMessage" class="message" role="status"></p>
       </form>
     </section>
-    <section class="admin-panel">
-  <div class="panel-heading">
-    <h2>Our Videos</h2>
-    <span class="pill">Video Studio</span>
-  </div>
 
-  <p dir="rtl">ارفع فيديوهات ذكرياتنا واختار تظهر فين ❤️</p>
+    <section class="admin-panel video-admin-panel">
+      <div class="panel-heading"><div><span class="section-kicker">KEEP THE MOMENT MOVING</span><h2>Our Videos</h2></div><span class="pill">Video Studio</span></div>
+      <p class="arabic muted" dir="rtl">ارفع فيديوهات ذكرياتنا واختار تظهر فين ❤️</p>
+      <form id="videoForm" class="stack">
+        <label>Video title<input id="videoTitle" type="text" required placeholder="Our beautiful moment"></label>
+        <label>Description<textarea id="videoDescription" rows="3" dir="rtl" placeholder="اكتب ذكرى الفيديو..."></textarea></label>
+        <label>Choose video (MP4)<input id="videoFile" type="file" accept="video/*,.mp4,.mov,.m4v" required></label>
+        <div id="videoPreview" class="video-preview"></div>
+        <label>Show inside album (optional)<select id="videoAlbum"><option value="">No album</option></select></label>
+        <label class="inline-check"><input id="showVideoInSection" type="checkbox" checked> Also show in Our Videos section</label>
+        <button class="primary-btn" type="submit" id="saveVideoBtn">Upload video</button>
+        <p id="videoMessage" class="message" role="status"></p>
+      </form>
+      <div class="admin-sublist"><h3>Uploaded videos</h3><div id="adminVideos"><p>Loading videos...</p></div></div>
+    </section>
 
-  <form id="videoForm">
-    <label>Video title
-      <input id="videoTitle" type="text" required placeholder="Our beautiful moment">
-    </label>
-
-    <label>Description
-      <textarea id="videoDescription" rows="3" dir="rtl" placeholder="اكتب ذكرى الفيديو..."></textarea>
-    </label>
-
-    <label>Choose video (MP4)
-    <input id="videoFile" type="file" accept="video/*,.mp4,.mov,.m4v" required>
-    </label>
-
-    <label>Show inside album (optional)
-      <select id="videoAlbum">
-        <option value="">No album</option>
-      </select>
-    </label>
-
-    <label>
-      <input id="showVideoInSection" type="checkbox" checked>
-      Also show in Our Videos section
-    </label>
-
-    <button type="submit" id="saveVideoBtn">Upload video</button>
-    <p id="videoMessage"></p>
-  </form>
-
-  <div id="adminVideos">
-    <p>Loading videos...</p>
-  </div>
-</section>
-    <section class="admin-panel">
-  <div class="panel-heading">
-    <h2>All memory albums</h2>
-    <span id="albumCount" class="pill">0 albums</span>
-  </div>
-
-  <p class="muted">Drag and drop albums to arrange their order on the website.</p>
-
-  <div class="button-row">
-    <button type="button" class="primary-btn" id="saveAlbumOrderBtn">Save Order</button>
-    <span id="albumOrderMessage" class="message" role="status"></span>
-  </div>
-
-  <div id="adminAlbums" class="admin-list">
-    <div class="loading">Loading albums…</div>
-  </div>
-</section>
-    </main>
+    <section class="admin-panel albums-admin-panel">
+      <div class="panel-heading"><div><span class="section-kicker">YOUR TIME CAPSULE</span><h2>All memory albums</h2></div><span id="albumCount" class="pill">0 albums</span></div>
+      <p class="muted">Drag and drop albums to arrange their order on the website.</p>
+      <div class="button-row"><button type="button" class="primary-btn" id="saveAlbumOrderBtn">Save Order</button><span id="albumOrderMessage" class="message" role="status"></span></div>
+      <div id="adminAlbums" class="admin-list"><div class="loading">Loading albums…</div></div>
+    </section>
+  </main>
 </body>
 </html>
