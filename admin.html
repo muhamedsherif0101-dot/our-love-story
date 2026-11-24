@@ -58,12 +58,48 @@
         <label>Story / message <span class="arabic hint" dir="rtl">اكتب حكاية اليوم أو رسالة للولو</span><textarea id="story" dir="rtl" rows="5" placeholder="احكي تفاصيل اليوم اللي مش عايزنا ننساه..."></textarea></label>
         <label>Photos <span class="hint">اختار صورك، وشوف معاينتها قبل الرفع. تقدر تضيف صور جديدة وانت بتعدل ألبوم.</span><input id="photos" type="file" accept="image/*" multiple></label>
         <div id="selectedFiles" class="selected-files"><p class="hint">No photos selected yet.</p></div>
-        <label>Album song (MP3) <span class="hint">اختار أغنية خاصة بالذكرى — MP3 فقط</span><input id="albumSong" type="file" accept="audio/mpeg,.mp3"></label>
-        <div id="selectedSong" class="hint">No new song selected.</div>
-        <label id="removeSongWrap" class="song-remove hidden"><input id="removeSong" type="checkbox"> Remove the current song from this album</label>
         <div class="button-row"><button class="primary-btn" type="submit" id="saveBtn">Save album</button><button class="secondary-btn hidden" type="button" id="cancelEdit">Cancel edit</button></div>
         <p id="formMessage" class="message" role="status"></p>
       </form>
+    </section>
+
+    <section class="admin-panel music-admin-panel">
+      <div class="panel-heading">
+        <div>
+          <span class="section-kicker">OUR SOUNDTRACK</span>
+          <h2>Our Music</h2>
+        </div>
+        <span class="pill">Music Studio</span>
+      </div>
+
+      <p class="arabic muted" dir="rtl">
+        ارفع الأغاني اللي هتظهر في مشغل الموقع، من غير ما تكون مرتبطة بأي ألبوم ❤️
+      </p>
+
+      <form id="musicForm" class="stack">
+        <label>
+          Song title
+          <input id="musicTitle" type="text" required maxlength="150" placeholder="Our song">
+        </label>
+
+        <label>
+          Choose song (MP3)
+          <input id="musicFile" type="file" accept="audio/mpeg,.mp3" required>
+        </label>
+
+        <button class="primary-btn" type="submit" id="saveMusicBtn">
+          Upload song
+        </button>
+
+        <p id="musicMessage" class="message" role="status"></p>
+      </form>
+
+      <div class="admin-sublist">
+        <h3>Uploaded songs</h3>
+        <div id="adminMusic">
+          <p>Loading songs...</p>
+        </div>
+      </div>
     </section>
 
     <section class="admin-panel video-admin-panel">
