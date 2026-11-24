@@ -319,10 +319,7 @@ function editAlbum(a) {
     holder.appendChild(grid);
   }
   $("photos").addEventListener("change", renderPhotoSelection);
-  $("albumSong").addEventListener("change",()=>{
-    const f=$("albumSong").files[0];
-    $("selectedSong").textContent=f?`Selected song: ${f.name}`:"No new song selected.";
-  });
+ 
   let videoPreviewUrl = null;
 
   $("videoFile").addEventListener("change", () => {
@@ -348,45 +345,6 @@ function editAlbum(a) {
 
     holder.append(video, meta);
   });
-
-  async function uploadSong(file, albumId) {
-    if (!file) return;
-
-    if (!(file.type === "audio/mpeg" || file.name.toLowerCase().endsWith(".mp3"))) {
-      throw new Error("Please choose an MP3 file.");
-    }
-
-    const path = `${albumId}/music/${Date.now()}.mp3`;
-
-    const { error: upErr } = await db.storage.from(BUCKET).upload(path, file, {
-      upsert: false,
-      contentType: "audio/mpeg"
-    });
-
-    if (upErr) throw upErr;
-
-    const { data: oldRows, error: oldErr } = await db.from("album_music")
-      .select("storage_path").eq("album_id", albumId);
-
-    if (oldErr) {
-      await db.storage.from(BUCKET).remove([path]);
-      throw oldErr;
-    }
-
-    const { error: saveErr } = await db.from("album_music").upsert({
-      album_id: albumId,
-      storage_path: path,
-      title: file.name.replace(/\.mp3$/i, "")
-    }, { onConflict: "album_id" });
-
-    if (saveErr) {
-      await db.storage.from(BUCKET).remove([path]);
-      throw saveErr;
-    }
-
-    const oldPaths = (oldRows || []).map(x => x.storage_path).filter(x => x !== path);
-    if (oldPaths.length) await db.storage.from(BUCKET).remove(oldPaths);
-  }
 
   async function uploadPhoto(file, albumId, index) {
     const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
@@ -526,6 +484,54 @@ function editAlbum(a) {
     }
   }
 
+  async function loadAdminMusic() {
+    const holder = $("adminMusic");
+    if (!holder) return;
+
+    holder.innerHTML = '<p class="loading">Loading songs...</p>';
+
+    const { data, error } = await db
+      .from("site_music")
+      .select("id,title,storage_path,sort_order,created_at")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      holder.textContent = "Could not load songs.";
+      return;
+    }
+
+    holder.innerHTML = "";
+
+    if (!data || !data.length) {
+      holder.innerHTML = '<p class="muted">No songs uploaded yet.</p>';
+      return;
+    }
+
+    for (const song of data) {
+      const row = document.createElement("div");
+      row.className = "admin-album-row";
+
+      const info = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = song.title || "Our Song";
+
+      const details = document.createElement("p");
+      details.textContent = "Standalone song · Our Music";
+
+      info.append(title, details);
+
+      const del = document.createElement("button");
+      del.className = "danger-btn small-btn";
+      del.textContent = "Delete";
+      del.onclick = () => deleteSiteMusic(song);
+
+      row.append(info, del);
+      holder.appendChild(row);
+    }
+  }
+
   $("videoForm").addEventListener("submit", async e => {
     e.preventDefault();
 
@@ -577,25 +583,6 @@ function editAlbum(a) {
       const files = Array.from($("photos").files);
       for (let i = 0; i < files.length; i++) {
         await uploadPhoto(files[i], albumId, i);
-      }
-
-      const songFile = $("albumSong").files[0];
-
-      if (songFile) {
-        await uploadSong(songFile, albumId);
-      } else if (id && $("removeSong").checked) {
-        const { data: oldSongs, error: readErr } = await db.from("album_music")
-          .select("storage_path").eq("album_id", albumId);
-
-        if (readErr) throw readErr;
-
-        const { error: delErr } = await db.from("album_music")
-          .delete().eq("album_id", albumId);
-
-        if (delErr) throw delErr;
-
-        const oldPaths = (oldSongs || []).map(x => x.storage_path);
-        if (oldPaths.length) await db.storage.from(BUCKET).remove(oldPaths);
       }
 
       const { data: photoRows } = await db.from("album_photos")
