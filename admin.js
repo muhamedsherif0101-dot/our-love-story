@@ -608,28 +608,95 @@ $("saveAlbumOrderBtn").addEventListener("click", saveAlbumOrder);
     }
   });
 
+ 
   async function deleteAlbum(a) {
-    if (!confirm(`Delete "${a.title}" and all its photos? This cannot be undone.`)) return;
+    if (!confirm(`Delete "${a.title}" and all its photos? This cannot be undone.`)) {
+      return;
+    }
 
     try {
-      const paths = [
-        ...(a.album_photos || []).map(p => p.storage_path),
-        ...(a.album_music || []).map(m => m.storage_path)
-      ];
+      message("Deleting album and its records…");
 
-      if (paths.length) {
-        const { error } = await db.storage.from(BUCKET).remove(paths);
-        if (error) throw error;
+      // Get all photo records
+      const { data: photos, error: photosError } = await db
+        .from("album_photos")
+        .select("id,storage_path")
+        .eq("album_id", a.id);
+
+      if (photosError) throw photosError;
+
+      // Get all music records
+      const { data: songs, error: songsError } = await db
+        .from("album_music")
+        .select("id,storage_path")
+        .eq("album_id", a.id);
+
+      if (songsError) throw songsError;
+
+      // Get videos attached to this album
+      const { data: videos, error: videosError } = await db
+        .from("album_videos")
+        .select("id,storage_path")
+        .eq("album_id", a.id);
+
+      if (videosError) throw videosError;
+
+      // Delete photo records from database
+      const { error: deletePhotosError } = await db
+        .from("album_photos")
+        .delete()
+        .eq("album_id", a.id);
+
+      if (deletePhotosError) throw deletePhotosError;
+
+      // Delete music records from database
+      const { error: deleteSongsError } = await db
+        .from("album_music")
+        .delete()
+        .eq("album_id", a.id);
+
+      if (deleteSongsError) throw deleteSongsError;
+
+      // Keep videos, but detach them from this album
+      const { error: detachVideosError } = await db
+        .from("album_videos")
+        .update({ album_id: null })
+        .eq("album_id", a.id);
+
+      if (detachVideosError) throw detachVideosError;
+
+      // Delete the album itself
+      const { error: deleteAlbumError } = await db
+        .from("albums")
+        .delete()
+        .eq("id", a.id);
+
+      if (deleteAlbumError) throw deleteAlbumError;
+
+      // Remove photo and song files from Storage
+      const storagePaths = [
+        ...(photos || []).map(p => p.storage_path),
+        ...(songs || []).map(s => s.storage_path)
+      ].filter(Boolean);
+
+      if (storagePaths.length) {
+        const { error: storageError } = await db.storage
+          .from(BUCKET)
+          .remove(storagePaths);
+
+        if (storageError) {
+          console.error("Album deleted, but some storage files remain:", storageError);
+          message("Album deleted, but some files could not be removed.", true);
+          await refresh();
+          return;
+        }
       }
 
-      const { error } = await db.from("albums").delete().eq("id", a.id);
-      if (error) throw error;
-
       await refresh();
-      message("Album deleted.");
+      message("Album deleted successfully ❤️");
 
     } catch (err) {
-      console.error(err);
+      console.error("Delete album error:", err);
       message(err.message || "Could not delete album.", true);
     }
   }
