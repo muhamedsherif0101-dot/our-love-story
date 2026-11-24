@@ -532,6 +532,109 @@ function editAlbum(a) {
     }
   }
 
+  async function deleteSiteMusic(song) {
+    if (!confirm(`Delete "${song.title}" from Our Music?`)) return;
+
+    const status = $("musicMessage");
+
+    try {
+      status.textContent = "Deleting song...";
+
+      const { error: dbError } = await db
+        .from("site_music")
+        .delete()
+        .eq("id", song.id);
+
+      if (dbError) throw dbError;
+
+      const { error: storageError } = await db.storage
+        .from(BUCKET)
+        .remove([song.storage_path]);
+
+      if (storageError) {
+        console.error(storageError);
+        status.textContent = "Song removed from library, but its file could not be deleted.";
+        status.className = "message error";
+        await loadAdminMusic();
+        return;
+      }
+
+      status.textContent = "Song deleted successfully ❤️";
+      status.className = "message success";
+
+      await loadAdminMusic();
+    } catch (err) {
+      console.error(err);
+      status.textContent = err.message || "Could not delete song.";
+      status.className = "message error";
+    }
+  }
+
+  $("musicForm").addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const button = $("saveMusicBtn");
+    const status = $("musicMessage");
+    const file = $("musicFile").files[0];
+    const title = $("musicTitle").value.trim();
+
+    if (!file) {
+      status.textContent = "Please choose an MP3 file.";
+      status.className = "message error";
+      return;
+    }
+
+    if (!(file.type === "audio/mpeg" || file.name.toLowerCase().endsWith(".mp3"))) {
+      status.textContent = "Please choose an MP3 file.";
+      status.className = "message error";
+      return;
+    }
+
+    button.disabled = true;
+    status.textContent = "Uploading song... Please wait.";
+    status.className = "message";
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+    const path = `site-music/${Date.now()}-${safeName}`;
+
+    try {
+      const { error: uploadError } = await db.storage
+        .from(BUCKET)
+        .upload(path, file, {
+          upsert: false,
+          contentType: "audio/mpeg"
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { error: saveError } = await db
+        .from("site_music")
+        .insert({
+          title: title || file.name.replace(/\.mp3$/i, ""),
+          storage_path: path,
+          sort_order: Date.now()
+        });
+
+      if (saveError) {
+        await db.storage.from(BUCKET).remove([path]);
+        throw saveError;
+      }
+
+      status.textContent = "Song uploaded successfully! ❤️";
+      status.className = "message success";
+
+      $("musicForm").reset();
+
+      await loadAdminMusic();
+    } catch (err) {
+      console.error(err);
+      status.textContent = err.message || "Could not upload song.";
+      status.className = "message error";
+    } finally {
+      button.disabled = false;
+    }
+  });
+
   $("videoForm").addEventListener("submit", async e => {
     e.preventDefault();
 
@@ -724,9 +827,10 @@ function editAlbum(a) {
       }
 
       await loadEditableContent();
-      await loadLoveLetterSettings();
-      renderPhotoSelection();
-      await refresh();
+await loadLoveLetterSettings();
+renderPhotoSelection();
+await refresh();
+await loadAdminMusic();
 
     } catch (e) {
       console.error(e);
