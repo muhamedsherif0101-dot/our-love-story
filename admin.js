@@ -571,7 +571,6 @@ function editAlbum(a) {
   }
 
   $("musicForm").addEventListener("submit", async e => {
-    alert("Music upload code is working!");
     e.preventDefault();
 
     const button = $("saveMusicBtn");
