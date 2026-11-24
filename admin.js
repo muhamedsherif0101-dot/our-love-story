@@ -135,7 +135,11 @@ const VIDEO_BUCKET = "memory-videos";
   function message(text, bad=false) { $("formMessage").textContent=text; $("formMessage").className=bad?"message error":"message success"; }
   function slug(text) { return text.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") || "memory"; }
   async function refresh() {
-   const { data, error } = await db.from("albums").select("id,title,event_date,story,created_at,sort_order,album_photos(id,storage_path),album_music(id,storage_path,title)").order("sort_order",{ascending:true,nullsFirst:false}).order("created_at",{ascending:false});
+   const { data, error } = await db
+  .from("albums")
+  .select("id,title,event_date,story,created_at,sort_order,album_photos(id,storage_path)")
+  .order("sort_order", { ascending: true, nullsFirst: false })
+  .order("created_at", { ascending: false });
     if (error) { $("adminAlbums").textContent="Could not load albums."; console.error(error); return; }
     albumsCache = data || [];
 $("albumCount").textContent = `${albumsCache.length} albums`;
@@ -191,7 +195,7 @@ videoAlbum.value = selectedAlbum;
   h.textContent = a.title;
 
   const p = document.createElement("p");
-  p.textContent = `${a.event_date || "No date"} · ${(a.album_photos || []).length} photos · ${(a.album_music || []).length ? "song added" : "no song"}`;
+ p.textContent = `${a.event_date || "No date"} · ${(a.album_photos || []).length} photos`;
 
   info.append(h, p);
 
@@ -249,18 +253,28 @@ videoAlbum.value = selectedAlbum;
 }
 
 $("saveAlbumOrderBtn").addEventListener("click", saveAlbumOrder);
-  function editAlbum(a) {
-    $("albumId").value=a.id; $("title").value=a.title; $("eventDate").value=a.event_date||""; $("story").value=a.story||"";
-    $("formHeading").textContent="Edit memory album"; $("saveBtn").textContent="Save changes"; $("cancelEdit").classList.remove("hidden");
-    const hasSong=!!(a.album_music||[]).length;
-    $("selectedSong").textContent=hasSong?`Current song: ${a.album_music[0].title||"Album song"}`:"No song uploaded yet.";
-    $("removeSongWrap").classList.toggle("hidden",!hasSong); $("removeSong").checked=false;
-    window.scrollTo({top:0,behavior:"smooth"});
-  }
-  function resetForm() {
-    $("albumForm").reset(); $("albumId").value=""; $("selectedSong").textContent=""; $("removeSongWrap").classList.add("hidden"); $("formHeading").textContent="Create a memory album";
-    $("saveBtn").textContent="Save album"; $("cancelEdit").classList.add("hidden"); renderPhotoSelection(); $("selectedSong").textContent="";
-  }
+function editAlbum(a) {
+  $("albumId").value = a.id;
+  $("title").value = a.title;
+  $("eventDate").value = a.event_date || "";
+  $("story").value = a.story || "";
+
+  $("formHeading").textContent = "Edit memory album";
+  $("saveBtn").textContent = "Save changes";
+  $("cancelEdit").classList.remove("hidden");
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+ function resetForm() {
+  $("albumForm").reset();
+  $("albumId").value = "";
+  $("formHeading").textContent = "Create a memory album";
+
+  $("saveBtn").textContent = "Save album";
+  $("cancelEdit").classList.add("hidden");
+
+  renderPhotoSelection();
+}
   $("cancelEdit").addEventListener("click",resetForm);
   function renderPhotoSelection() {
     const holder = $("selectedFiles");
