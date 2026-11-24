@@ -610,7 +610,7 @@ function editAlbum(a) {
       const { error: saveError } = await db
         .from("site_music")
         .insert({
-          title: title || file.name.replace(/\.mp3$/i, ""),
+          title: file.name.replace(/\.[^/.]+$/, ""),
           storage_path: path,
           sort_order: Date.now()
         });
