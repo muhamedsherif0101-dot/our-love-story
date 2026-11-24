@@ -612,7 +612,7 @@ function editAlbum(a) {
         .insert({
           title: file.name.replace(/\.[^/.]+$/, ""),
           storage_path: path,
-          sort_order: Date.now()
+          sort_order: Math.floor(Date.now() / 1000)
         });
 
       if (saveError) {
