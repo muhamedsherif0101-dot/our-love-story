@@ -729,14 +729,6 @@ function editAlbum(a) {
 
       if (photosError) throw photosError;
 
-      // Get all music records
-      const { data: songs, error: songsError } = await db
-        .from("album_music")
-        .select("id,storage_path")
-        .eq("album_id", a.id);
-
-      if (songsError) throw songsError;
-
       // Get videos attached to this album
       const { data: videos, error: videosError } = await db
         .from("album_videos")
@@ -753,14 +745,6 @@ function editAlbum(a) {
 
       if (deletePhotosError) throw deletePhotosError;
 
-      // Delete music records from database
-      const { error: deleteSongsError } = await db
-        .from("album_music")
-        .delete()
-        .eq("album_id", a.id);
-
-      if (deleteSongsError) throw deleteSongsError;
-
       // Keep videos, but detach them from this album
       const { error: detachVideosError } = await db
         .from("album_videos")
@@ -776,11 +760,9 @@ function editAlbum(a) {
         .eq("id", a.id);
 
       if (deleteAlbumError) throw deleteAlbumError;
-
-      // Remove photo and song files from Storage
+      // Remove photo files from Storage
       const storagePaths = [
-        ...(photos || []).map(p => p.storage_path),
-        ...(songs || []).map(s => s.storage_path)
+        ...(photos || []).map(p => p.storage_path)
       ].filter(Boolean);
 
       if (storagePaths.length) {
