@@ -576,8 +576,7 @@ function editAlbum(a) {
     const button = $("saveMusicBtn");
     const status = $("musicMessage");
     const file = $("musicFile").files[0];
-    const title = $("musicTitle").value.trim();
-
+    
     if (!file) {
       status.textContent = "Please choose an MP3 file.";
       status.className = "message error";
