@@ -205,7 +205,8 @@ async function loadVideos() {
   let globalPlaylist = [];
 let currentTrackIndex = 0;
 
-async function setupGlobalPlaylist(albums) {
+
+async function setupGlobalPlaylist() {
   const audio = $("globalAudio");
   const playBtn = $("globalPlayBtn");
   const nextBtn = $("globalNextBtn");
@@ -214,23 +215,31 @@ async function setupGlobalPlaylist(albums) {
 
   globalPlaylist = [];
 
-  for (const album of albums || []) {
-    const songs = Array.isArray(album.album_music)
-  ? album.album_music
-  : album.album_music
-    ? [album.album_music]
-    : [];
+  const { data: songs, error } = await db
+    .from("site_music")
+    .select("id,title,storage_path,sort_order,created_at")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
 
-for (const song of songs) {
-      try {
-        const url = await signedMedia(song.storage_path);
-        globalPlaylist.push({
-          url,
-          title: song.title || album.title || "Our Song"
-        });
-      } catch (error) {
-        console.error("Could not load song:", error);
-      }
+  if (error) {
+    console.error("Music library loading error:", error);
+    songTitle.textContent = "Our Songs";
+    songStatus.textContent = "Could not load the music library";
+    playBtn.disabled = true;
+    nextBtn.disabled = true;
+    return;
+  }
+
+  for (const song of songs || []) {
+    try {
+      const url = await signedMedia(song.storage_path);
+
+      globalPlaylist.push({
+        url,
+        title: song.title || "Our Song"
+      });
+    } catch (error) {
+      console.error("Could not load song:", error);
     }
   }
 
@@ -244,11 +253,13 @@ for (const song of songs) {
     songStatus.textContent = "No songs added yet...";
     playBtn.disabled = true;
     nextBtn.disabled = true;
+    playBtn.textContent = "Play ♡";
     return;
   }
 
   songTitle.textContent = globalPlaylist[0].title;
   songStatus.textContent = "Ready when you are...";
+  playBtn.textContent = "Play ♡";
   playBtn.disabled = false;
   nextBtn.disabled = globalPlaylist.length < 2;
 
@@ -317,7 +328,12 @@ for (const song of songs) {
   async function loadAlbums() {
     const holder = $("albums");
     await loadVideos();
-    const { data, error } = await db.from("albums").select("id,title,event_date,story,cover_path,sort_order,album_photos(id,storage_path,caption,sort_order),album_music(id,storage_path,title)").order("sort_order", { ascending: true, nullsFirst: false }).order("event_date", { ascending: false, nullsFirst: false });
+    await setupGlobalPlaylist();
+    const { data, error } = await db
+  .from("albums")
+  .select("id,title,event_date,story,cover_path,sort_order,album_photos(id,storage_path,caption,sort_order)")
+  .order("sort_order", { ascending: true, nullsFirst: false })
+  .order("event_date", { ascending: false, nullsFirst: false });
     if (error) { holder.innerHTML = '<p class="error">Could not load albums. Please refresh and try again.</p>'; console.error(error); return; }
     if (!data?.length) { holder.innerHTML = '<div class="empty-state"><span>♡</span><h3>Our story starts here</h3><p class="arabic" dir="rtl">لسه هنملى المكان ده بذكرياتنا الحلوة.</p></div>'; return; }
     holder.innerHTML = "";
@@ -372,14 +388,13 @@ if (album.story && album.story.length > 100) {
 body.appendChild(count);
 
 card.append(img, body);
-      card.addEventListener("click", () => openAlbum(album, photos, album.album_music || []));
+      card.addEventListener("click", () => openAlbum(album, photos));
       holder.appendChild(card);
     }
-await setupGlobalPlaylist(data);
 
   }
 
-async function openAlbum(album, photos, songs = []) {
+async function openAlbum(album, photos) {
   $("albumTitle").textContent = album.title;
   $("albumDate").textContent = formatDate(album.event_date);
   $("albumStory").textContent = album.story || "";
